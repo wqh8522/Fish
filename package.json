@@ -1,0 +1,22 @@
+{
+  "name": "fish",
+  "version": "1.0.0",
+  "description": "fish",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wqh8522/Fish.git"
+  },
+  "author": "ahua",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wqh8522/Fish/issues"
+  },
+  "homepage": "https://github.com/wqh8522/Fish#readme",
+  "devDependencies": {
+    "electron": "^15.3.1"
+  }
+}
