@@ -1,61 +1,74 @@
 <template>
   <!-- <div id="wrapper"> -->
   <el-container id="out">
-    <el-aside width="250px" style="background-color: rgb(238, 241, 246)">
-      <el-menu :default-openeds="['1', '3']">
-        <el-submenu index="1">
-          <template slot="title">
-            <i class="el-icon-message"></i>导航一</template
-          >
-          <el-menu-item-group>
-            <template slot="title">分组一</template>
-            <el-menu-item index="1-1"><i class="el-icon-message"></i>选项1</el-menu-item>
-            <el-menu-item index="1-2">选项2</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="分组2">
-            <el-menu-item index="1-3">选项3</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="1-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="1-4-1">选项4-1</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-        <el-submenu index="2">
-          <template slot="title"><i class="el-icon-menu"></i>导航二</template>
-          <el-menu-item-group>
-            <template slot="title">分组一</template>
-            <el-menu-item index="2-1">选项1</el-menu-item>
-            <el-menu-item index="2-2">选项2</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="分组2">
-            <el-menu-item index="2-3">选项3</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="2-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="2-4-1">选项4-1</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-        <el-submenu index="3">
-          <template slot="title"
-            ><i class="el-icon-setting"></i>导航三</template
-          >
-          <el-menu-item-group>
-            <template slot="title">分组一</template>
-            <el-menu-item index="3-1">选项1</el-menu-item>
-            <el-menu-item index="3-2">选项2</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="分组2">
-            <el-menu-item index="3-3">选项3</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="3-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="3-4-1">选项4-1</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-      </el-menu>
-    </el-aside>
+    <el-container>
+      <el-container style="width: 1px; width: 23%">
+        <el-aside>
+          <el-menu :default-openeds="['1', '2']">
+            <el-submenu index="1">
+              <template slot="title" id="title"
+                >FUND <i class="el-icon-refresh-right" @click="refreshFund"
+              /></template>
+              <!-- <i class="el-icon-message"></i> -->
+              <el-menu-item
+                v-for="(val, index) in fundQuotList"
+                :index="val.code"
+                :key="index"
+                ><i :class="val.isDown ? downClass : upClass" />&nbsp;&nbsp;{{
+                  val.zd
+                }}&nbsp;&nbsp;&nbsp;{{ val.name }}</el-menu-item
+              >
+            </el-submenu>
+            <el-submenu index="2">
+              <template slot="title" id="title"
+                >STOCK
+                <span>
+                  <i
+                    class="el-icon-refresh-right"
+                    @click="refreshStock" /></span
+              ></template>
+              <el-menu-item
+                v-for="(val, index) in stockQuotList"
+                :index="val.code"
+                :key="index"
+              >
+                <i :class="val.isDown ? downClass : upClass" />&nbsp;&nbsp;{{
+                  val.zd
+                }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{
+                  val.price
+                }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{
+                  val.name
+                }}</el-menu-item
+              >
+            </el-submenu>
+          </el-menu>
+        </el-aside>
 
-    <el-container style="">
+        <el-footer style="height: 5%; border-top: 1px solid #eee"
+          ><i class="el-icon-plus" @click="search"
+        /></el-footer>
+      </el-container>
+      <el-main style="height: 100%;  width: 60%">
+        <search-page v-show="showSearchStockPanel"></search-page
+      ></el-main>
+    </el-container>
+
+    <!-- <el-dialog title="收货地址" :visible.sync="dialogTableVisible">
+      <el-table :data="gridData">
+        <el-table-column
+          property="date"
+          label="日期"
+          width="150"
+        ></el-table-column>
+        <el-table-column
+          property="name"
+          label="姓名"
+          width="200"
+        ></el-table-column>
+        <el-table-column property="address" label="地址"></el-table-column>
+      </el-table> -->
+    <!-- </el-dialog> -->
+    <!-- <el-container style="">
       <el-header style="text-align: right; font-size: 12px">
         <el-dropdown>
           <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -67,41 +80,98 @@
         </el-dropdown>
         <span>王小虎</span>
       </el-header>
-
-      <el-main>
-        <el-table :data="tableData">
-          <el-table-column prop="date" label="日期" width="140">
-          </el-table-column>
-          <el-table-column prop="name" label="姓名" width="120">
-          </el-table-column>
-          <el-table-column prop="address" label="地址"> </el-table-column>
-        </el-table>
-      </el-main>
-    </el-container>
+    </el-container> -->
   </el-container>
-  <!-- </div> -->
 </template>
 
 <script>
+import { getStockQuot, getFundQuot } from "../../api/api";
+import vPinyin from "../../utils/Piny";
+import SearchPage from "./SearchPage.vue";
 export default {
   name: "leeks-index-page",
-  //   components: { SystemInformation },
+  components: { SearchPage },
   data() {
-    const item = {
-      date: "2016-05-02",
-      name: "王小虎",
-      address: "上海市普陀区金沙江路 1518 弄",
-    };
     return {
-      tableData: Array(20).fill(item),
+      upClass: "el-icon-arrow-up",
+      downClass: "el-icon-arrow-down",
+      hideMode: false,
+      fundCodes: ["005953", "001071", "007028", "320007", "161726"],
+      stockCodes: ["sh000001", "sh000300", "sz399001", "sz399006"],
+      fundQuotList: [],
+      stockQuotList: [],
+      showSearchStockPanel: true,
     };
+  },
+  mounted: function () {
+    this.refreshStock();
+    this.refreshFund();
   },
   methods: {
     open(link) {
       this.$electron.shell.openExternal(link);
     },
-    testClick() {
-      console.log(222);
+    search() {
+      this.showSearchStockPanel = true;
+    },
+    refreshFund() {
+      getFundQuot(this.fundCodes.join(","))
+        .then((response) => {
+          this.fundQuotList = new Array();
+
+          const fundQuotDatas = response.data.Datas;
+          console.log(fundQuotDatas);
+          if (fundQuotDatas.length > 0) {
+            fundQuotDatas.forEach((element, index, array) => {
+              const name = this.hideMode
+                ? vPinyin.chineseToPinYin(element.SHORTNAME)
+                : element.SHORTNAME;
+              const zd = isNaN(Number(element.GSZZL))
+                ? Number(element.NAVCHGRT)
+                : Number(element.GSZZL);
+              this.fundQuotList.push({
+                code: element.FCODE,
+                name: "「" + name + "」",
+                zd: zd,
+                isDown: zd < 0,
+              });
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$message.error("属性基金数据失败！");
+        });
+    },
+    refreshStock() {
+      getStockQuot(this.stockCodes.join(","))
+        .then((response) => {
+          this.stockQuotList = new Array();
+          var datas = response.data.split("\n");
+          if (datas.length > 0) {
+            datas.forEach((data) => {
+              if (data === null || data === "") {
+                return;
+              }
+              let oneStock = data.split("~");
+              let code = oneStock[0].replace("v_", "");
+              const name = this.hideMode
+                ? vPinyin.chineseToPinYin(oneStock[1])
+                : oneStock[1];
+              this.stockQuotList.push({
+                code: code.substr(0, code.lastIndexOf("=")),
+                name: "「" + name + "」",
+                zd: oneStock[32],
+                isDown: oneStock[32].startsWith("-"),
+                price: oneStock[32],
+              });
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$message.error("属性股票数据失败！");
+        });
     },
   },
 };
@@ -111,18 +181,49 @@ export default {
 #wrapper {
   max-height: 100%;
 }
-#out{
+#out {
   height: 99%;
   border: 1px solid #eee;
   border-radius: 5px;
 }
+.el-submenu {
+  border-bottom: 1px solid #eee;
+  /* height: 25px; */
+}
 .el-header {
   background-color: #b3c0d1;
   color: #333;
-  line-height: 25px;
+  line-height: 30px;
 }
 
 .el-aside {
-  color: #333;
+  color: #eee;
+  background-color: white;
+  /* background-color: rgb(238, 241, 246);  */
+  min-height: 95%;
+  width: auto !important;
 }
+
+.el-submenu__title {
+  padding-left: 5px !important;
+  line-height: 30px;
+  height: 30px;
+  font-size: 12px;
+}
+
+.el-submenu .el-menu-item {
+  padding-left: 10px !important;
+  line-height: 30px;
+  height: 30px;
+  /* padding: 1px; */
+
+  /* font-size: 12px; */
+}
+.el-footer {
+  padding: 8px 0px 0px 6px;
+}
+
+/* .el-submenu > i {
+  font-size: 14px;
+} */
 </style>

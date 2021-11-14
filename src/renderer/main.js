@@ -2,7 +2,8 @@ import Vue from 'vue'
 import axios from 'axios'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-import VueElectron from 'vue-electron'
+import VueElectron from 'vue-electron';
+
 
 
 import App from './App'

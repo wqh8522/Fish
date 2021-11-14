@@ -21,7 +21,11 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000
+    width: 1000,
+    webPreferences:{//网页功能的设置
+      nodeIntegration: true,
+      webSecurity: false //是否禁用同源策略(上线时删除此配置)
+    }
   })
 
   mainWindow.loadURL(winURL)
@@ -44,6 +48,16 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+// 修改的文件：main>index.js中
+
+
+// 步骤一：按官方文档添加webSecurity项
+
+
+// 步骤二：在文件中添加以下配置项
+//解决10.X版本跨域不成功问题(上线删除)
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
 /**
  * Auto Updater
