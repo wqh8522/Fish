@@ -23,8 +23,9 @@ function createWindow () {
     useContentSize: true,
     width: 1000,
     webPreferences:{//网页功能的设置
+      webSecurity: false,
       nodeIntegration: true,
-      webSecurity: false //是否禁用同源策略(上线时删除此配置)
+      contextIsolation:false
     }
   })
 

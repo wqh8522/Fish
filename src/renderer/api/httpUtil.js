@@ -8,26 +8,6 @@ const service = axios.create({
   timeout: 80000 // request timeout
 })
 
-// export function request(config) {
-//   return new Promise((resolve, reject) => {
-//       //创建axios实例
-//       const instance = axios.creat({
-//           baseURL: '',
-//           timeout: 50000
-//       })
-//       //发送真正的网络请求
-//       instance(config)
-//           .then(res => {
-//               // console.log(res) //要回调出去
-//               resolve(res) //回调
-//           })
-//           .catch(err => {
-//               // console.log(err) //要回调出去
-//               reject(err) //回调
-//           })
-//   })
-// }
- 
 // request interceptor
 service.interceptors.request.use(
  
