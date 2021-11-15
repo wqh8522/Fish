@@ -57,7 +57,7 @@ app.on('activate', () => {
 
 // 步骤二：在文件中添加以下配置项
 //解决10.X版本跨域不成功问题(上线删除)
-app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
+// app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 
 /**
  * Auto Updater
