@@ -145,9 +145,9 @@ export default {
                 this.stockQuotList.push({
                   code: code.substr(0, code.lastIndexOf("=")),
                   name: "「" + name + "」",
-                  zd: oneStock[32],
+                  zd: oneStock[32] + '%',
                   isDown: oneStock[32].startsWith("-"),
-                  price: oneStock[32],
+                  price: oneStock[3],
                 });
               });
             }
