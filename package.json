@@ -51,7 +51,7 @@
     }
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.24.0",
     "electron-store": "^8.0.1",
     "element-ui": "^2.15.6",
     "vue": "^2.5.16",
@@ -76,10 +76,10 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron": "^15.3.1",
+    "electron": "^16.0.0",
     "electron-builder": "^22.13.1",
-    "electron-debug": "^1.5.0",
-    "electron-devtools-installer": "^2.2.4",
+    "electron-debug": "^3.2.0",
+    "electron-devtools-installer": "^3.2.0",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "listr": "^0.14.3",
