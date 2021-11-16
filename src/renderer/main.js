@@ -27,3 +27,17 @@ new Vue({
   store,
   template: '<App/>'
 }).$mount('#app')
+
+const vm = new Vue({
+  el: '#app',
+  data: {
+    a: 1
+  },
+  router,
+  template: '<App/>',
+  components: {
+    App
+  }
+});
+
+global.vm = vm;

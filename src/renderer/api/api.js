@@ -3,7 +3,7 @@ import request from '../api/httpUtil'
 
 /** ===================腾讯股票接口============================ */
 // 获取股票数据  目前使用接口
-export function getStockQuot(codes) {
+export function getStockQuotTx(codes) {
     return request({
 		url: 'http://qt.gtimg.cn/q=' + codes,
 		method: 'get',//请求方法
@@ -11,9 +11,9 @@ export function getStockQuot(codes) {
 }
 
 // 腾讯搜索接口 https://smartbox.gtimg.cn/s3/?v=2&q=22222&t=hk
-export function searchStockTx(searchKey) {
+export function searchStockTx(searchKey, type) {
 	return request({
-		url: 'https://smartbox.gtimg.cn/s3/?v=2&t=hk&q=' + searchKey,
+		url: 'https://smartbox.gtimg.cn/s3/?v=2&t=' + type + '&q=' + searchKey,
 		method: 'get'
 	})
 }
