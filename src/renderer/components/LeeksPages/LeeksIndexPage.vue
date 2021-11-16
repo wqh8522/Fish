@@ -2,11 +2,11 @@
   <!-- <div id="wrapper"> -->
   <el-container id="out">
     <el-container>
-      <el-container style="width: 1px; width: 23%">
+      <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
         <el-aside>
           <el-menu :default-openeds="['1', '2']">
             <el-submenu index="1">
-              <template slot="title" id="title"
+              <template slot="title"
                 >FUND <i class="el-icon-refresh-right" @click="refreshFund"
               /></template>
               <!-- <i class="el-icon-message"></i> -->
@@ -20,7 +20,7 @@
               >
             </el-submenu>
             <el-submenu index="2">
-              <template slot="title" id="title"
+              <template slot="title"
                 >STOCK
                 <span>
                   <i
@@ -44,7 +44,7 @@
           </el-menu>
         </el-aside>
 
-        <el-footer style="height: 5%; border-top: 1px solid #eee"
+        <el-footer style="height: 40px; border-top: 1px solid #eee"
           ><i class="el-icon-plus" @click="search"
         /></el-footer>
       </el-container>
@@ -188,6 +188,7 @@ export default {
 }
 .el-submenu {
   border-bottom: 1px solid #eee;
+  border-right: none;
   /* height: 25px; */
 }
 .el-header {
@@ -200,8 +201,9 @@ export default {
   color: #eee;
   background-color: white;
   /* background-color: rgb(238, 241, 246);  */
-  min-height: 95%;
+  height: 95%;
   width: auto !important;
+  border-right: none;
 }
 
 .el-submenu__title {
@@ -210,17 +212,20 @@ export default {
   height: 30px;
   font-size: 12px;
 }
+.el-menu {
+  border-right: none;
+}
 
 .el-submenu .el-menu-item {
   padding-left: 10px !important;
   line-height: 30px;
   height: 30px;
-  /* padding: 1px; */
-
-  /* font-size: 12px; */
 }
 .el-footer {
-  padding: 8px 0px 0px 6px;
+  padding: 5px 0px 0px 6px;
+  height: 35px;
+  border-bottom: 1px solid rgb(238, 238, 238);
+
 }
 
 /* .el-submenu > i {
