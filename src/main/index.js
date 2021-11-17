@@ -41,15 +41,20 @@ function createWindow () {
   //   event.sender.send('asynchronous-reply', 'pong');
   // });
 
-  ipcMain.on('synchronous-message', function(event, arg) {
-    if (arg == 'leeks-right') {
-      mainWindow.setSize(1000, 600, true);
-    }
-  });
+  // ipcMain.on('synchronous-message', function(event, arg) {
+  //   if (arg == 'leeks-right') {
+  //     mainWindow.setSize(1000, 600, true);
+  //   }
+  // });
 
   ipcMain.on('asynchronous-message', (event, arg) => {
-    if (arg == 'leeks-right') {
-      mainWindow.setSize(1000, 600, true);
+    switch (arg) {
+      case 'leeks-right-open':
+        mainWindow.setSize(1000, 600, true);
+        break;
+      case 'leeks-right-close':
+        mainWindow.setSize(384, 563, true);
+        break;
     }
   })
 

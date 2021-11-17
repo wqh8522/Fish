@@ -5,6 +5,7 @@
       <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
         <el-header>
           <el-button icon="el-icon-search" size="mini" @click="search"/>
+          <el-button icon="el-icon-setting" size="mini"/>
         </el-header>
         <el-aside>
           <el-menu :default-openeds="['1', '2']" >
@@ -50,9 +51,9 @@
         </el-aside>
 
       </el-container >
-        <el-main style="height: 99%;  width: 60%" v-show="showSearchStockPanel">
-        <search-page v-show="showSearchStockPanel"
-                     v-bind:fund-codes="fundCodes"
+      <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
+        <el-button class="el-icon-close" size="mini" style="float: right;border:none" @click="closePanel" ></el-button>
+        <search-page v-bind:fund-codes="fundCodes"
                      v-bind:stock-codes="stockCodes"
                      v-bind:add-select="addSelect"></search-page>
         </el-main>
@@ -80,6 +81,7 @@ export default {
       fundQuotList: [],
       stockQuotList: [],
       showSearchStockPanel: false,
+      sliderVal: 20,
       stockInterval: null,
       fundInterval: null
     };
@@ -107,10 +109,14 @@ export default {
     open(link) {
       this.$electron.shell.openExternal(link);
     },
+    closePanel() {
+      this.showSearchStockPanel = false;
+      ipcRenderer.send('asynchronous-message', 'leeks-right-close');
+    },
     search() {
       // ipcRenderer.sendSync('synchronous-message', 'leeks-right');
       // ipcRenderer.on('asynchronous-reply', (event, arg) => {})
-      ipcRenderer.send('asynchronous-message', 'leeks-right');
+      ipcRenderer.send('asynchronous-message', 'leeks-right-open');
       setTimeout(() =>{
         this.showSearchStockPanel = true;
       }, 100);
