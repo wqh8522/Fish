@@ -26,7 +26,16 @@
           <el-button
               icon="el-icon-plus"
               style="float: right; padding: 3px 0; border: none"
+              size="medium"
+              v-show="!val.isExist"
               @click="addSelectM(val.code)"
+          ></el-button>
+          <el-button
+              icon="el-icon-minus"
+              style="float: right; padding: 3px 0; border: none"
+              v-show="val.isExist"
+              size="medium"
+              @click="removeSelectM(val.code)"
           ></el-button>
         </div>
       </el-card>
@@ -48,8 +57,10 @@ export default {
   name: "search-page",
   props: {
     fundCodes: Array,
-    stockCodes: Array,
-    addSelect:{type: Function}
+    aStockCodes: Array,
+    hkStockCodes: Array,
+    addSelect:{type: Function},
+    removeSelect:{type: Function}
   },
   data() {
     return {
@@ -68,15 +79,15 @@ export default {
       }
       this.tableDataList = new Array();
       if (this.select === "gp") {
-        this.searchStock('gp')
+        this.searchStock('gp', this.aStockCodes)
       } else if (this.select === 'hk') {
         // 搜索港股
-        this.searchStock('hk')
+        this.searchStock('hk', this.hkStockCodes)
       } else if (this.select === "fund") {
         // 搜索基金
       }
     },
-    searchStock(type) {
+    searchStock(type, existCode) {
       // 搜索股票
       searchStockTx(this.searchText, type)
           .then((res) => {
@@ -89,7 +100,8 @@ export default {
               const itemList = item.split("~");
               this.tableDataList.push({
                 code: itemList[0] + itemList[1],
-                name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4]
+                name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
+                isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
               })
             })
           }).catch((error) => {
@@ -98,9 +110,22 @@ export default {
       });
     },
     addSelectM(val) {
-      console.log((val))
-     this.addSelect(val, this.select)
+      this.addSelect(val, this.select)
+      this.tableDataList.forEach((item) => {
+        if (item.code === val) {
+          item.isExist = true;
+        }
+      })
     },
+    removeSelectM(val) {
+      this.removeSelect(val, this.select)
+      this.tableDataList.forEach((item) => {
+        if (item.code === val) {
+          item.isExist = false;
+        }
+      })
+
+    }
   },
 };
 </script>
