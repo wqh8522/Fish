@@ -18,7 +18,7 @@ Vue.use(VueElectron)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
-Vue.config.productionTip = false
+Vue.config.productionTip =  false
 
 /* eslint-disable no-new */
 new Vue({
@@ -28,16 +28,3 @@ new Vue({
   template: '<App/>'
 }).$mount('#app')
 
-const vm = new Vue({
-  el: '#app',
-  data: {
-    a: 1
-  },
-  router,
-  template: '<App/>',
-  components: {
-    App
-  }
-});
-
-global.vm = vm;

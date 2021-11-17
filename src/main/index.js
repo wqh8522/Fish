@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain} from 'electron'
 import '../renderer/store'
 
 /**
@@ -34,6 +34,14 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  ipcMain.on('synchronous-message', (event, arg) => {
+    if (arg === 'logined') {
+      mainWindow.resize(1000, 1000)
+    }
+  })
+
+
 }
 
 app.on('ready', createWindow)

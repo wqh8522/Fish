@@ -3,9 +3,9 @@
   <el-container id="out">
     <el-container>
       <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
-        <el-header style="height: 40px; border-top: 1px solid #eee"
-        ><i class="el-icon-plus" @click="search"
-        /></el-header>
+        <el-header>
+          <el-button icon="el-icon-search" size="mini" @click="search"/>
+        </el-header>
         <el-aside>
           <el-menu :default-openeds="['1', '2']">
             <el-submenu index="1">
@@ -49,13 +49,13 @@
           </el-menu>
         </el-aside>
 
-      </el-container>
-      <el-main style="height: 99%;  width: 60%">
+      </el-container >
+        <el-main style="height: 99%;  width: 60%" v-show="showSearchStockPanel">
         <search-page v-show="showSearchStockPanel"
                      v-bind:fund-codes="fundCodes"
                      v-bind:stock-codes="stockCodes"
                      v-bind:add-select="addSelect"></search-page>
-      </el-main>
+        </el-main>
     </el-container>
   </el-container>
 </template>
@@ -64,10 +64,13 @@
 import {getStockQuotTx, getFundQuot} from "../../api/api";
 import vPinyin from "../../utils/Piny";
 import SearchPage from "./SearchPage.vue";
+// import ipcRenderer from 'electron';
+
 
 export default {
   name: "leeks-index-page",
   components: {SearchPage},
+
   data() {
     return {
       upClass: "el-icon-arrow-up",
@@ -77,7 +80,8 @@ export default {
       stockCodes: ["sh000001", "sh000300", "sz399001", "sz399006"],
       fundQuotList: [],
       stockQuotList: [],
-      showSearchStockPanel: true,
+      showSearchStockPanel: false,
+
     };
   },
   mounted: function () {
@@ -89,7 +93,9 @@ export default {
       this.$electron.shell.openExternal(link);
     },
     search() {
+      const {ipcRenderer} = require('electron')
       this.showSearchStockPanel = true;
+      ipcRenderer.sendSync('synchronous-message','logined');
     },
     addSelect(code, selectType) {
       console.log(code, selectType)
@@ -179,11 +185,6 @@ export default {
   /* height: 25px; */
 }
 
-.el-header {
-  background-color: #b3c0d1;
-  color: #333;
-  line-height: 30px;
-}
 
 .el-aside {
   color: #eee;
@@ -211,11 +212,10 @@ export default {
   height: 30px;
 }
 
-.el-footer {
-  padding: 5px 0px 0px 6px;
-  height: 35px;
+.el-header {
+  padding: 5px 0px 0px 5px;
+  height: 40px !important;
   border-bottom: 1px solid rgb(238, 238, 238);
-
 }
 
 /* .el-submenu > i {
