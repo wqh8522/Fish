@@ -7,7 +7,7 @@
           <el-button icon="el-icon-search" size="mini" @click="search"/>
         </el-header>
         <el-aside>
-          <el-menu :default-openeds="['1', '2']">
+          <el-menu :default-openeds="['1', '2']" >
             <el-submenu index="1">
               <template slot="title"
               >FUND <i class="el-icon-refresh-right" @click="refreshFund"
@@ -64,10 +64,7 @@
 import {getStockQuotTx, getFundQuot} from "../../api/api";
 import vPinyin from "../../utils/Piny";
 import SearchPage from "./SearchPage.vue";
-import { remote } from 'electron';
-
-// import ipcRenderer from 'electron';
-
+const ipcRenderer = require('electron').ipcRenderer;
 
 export default {
   name: "leeks-index-page",
@@ -83,21 +80,41 @@ export default {
       fundQuotList: [],
       stockQuotList: [],
       showSearchStockPanel: false,
-
+      stockInterval: null,
+      fundInterval: null
     };
   },
+  // created(){
+  //   this.worker=this.$worker.create([{
+  //     message:'hello',
+  //     func: function(e){
+  //       console.log('hello',e);
+  //       return 'hi yiye'
+  //     }
+  //   }])
+  // },
   mounted: function () {
-    this.refreshStock();
-    this.refreshFund();
+    if (this.fundCodes.length <=0 && this.stockCodes.length <= 0) {
+
+    } else {
+      this.refreshStock();
+      this.refreshFund();
+      this.startInterval();
+    }
+
   },
   methods: {
     open(link) {
       this.$electron.shell.openExternal(link);
     },
     search() {
-      this.showSearchStockPanel = true;
-      const ipcRenderer = require('electron').ipcRenderer;
-      console.log(ipcRenderer.sendSync('synchronous-message', 'leeks-right')); // prints "pong"
+      // ipcRenderer.sendSync('synchronous-message', 'leeks-right');
+      // ipcRenderer.on('asynchronous-reply', (event, arg) => {})
+      ipcRenderer.send('asynchronous-message', 'leeks-right');
+      setTimeout(() =>{
+        this.showSearchStockPanel = true;
+      }, 100);
+
     },
     addSelect(code, selectType) {
       console.log(code, selectType)
@@ -105,6 +122,20 @@ export default {
         this.stockCodes.push(code);
         this.refreshStock();
       }
+    },
+    startInterval() {
+       this.stockInterval = setInterval( () => {
+        console.log("refreshStock" + new Date().getTime())
+        this.refreshStock()
+      }, 5000);
+       this.fundInterval =  setInterval( () => {
+        console.log("refreshFund" + new Date().getTime())
+        this.refreshFund()
+      }, 10000);
+    },
+    stopInterval() {
+      clearInterval(this.stockInterval);
+      clearInterval(this.fundInterval);
     },
     refreshFund() {
       getFundQuot(this.fundCodes.join(","))
@@ -119,20 +150,20 @@ export default {
                     ? vPinyin.chineseToPinYin(element.SHORTNAME)
                     : element.SHORTNAME;
                 const zd = isNaN(Number(element.GSZZL))
-                    ? Number(element.NAVCHGRT)
-                    : Number(element.GSZZL);
+                    ? element.NAVCHGRT
+                    : element.GSZZL;
                 this.fundQuotList.push({
                   code: element.FCODE,
                   name: "「" + name + "」",
-                  zd: zd,
-                  isDown: zd < 0,
+                  zd: zd + "%",
+                  isDown:  zd.startsWith("-"),
                 });
               });
             }
           })
           .catch((error) => {
             console.log(error);
-            this.$message.error("属性基金数据失败！");
+            this.$message.error("刷新基金数据失败！");
           });
     },
     refreshStock() {
@@ -162,7 +193,7 @@ export default {
           })
           .catch((error) => {
             console.log(error);
-            this.$message.error("属性股票数据失败！");
+            this.$message.error("刷新股票数据失败！");
           });
     }
 

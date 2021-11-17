@@ -47,6 +47,12 @@ function createWindow () {
     }
   });
 
+  ipcMain.on('asynchronous-message', (event, arg) => {
+    if (arg == 'leeks-right') {
+      mainWindow.setSize(1000, 600, true);
+    }
+  })
+
 }
 
 app.on('ready', createWindow)
