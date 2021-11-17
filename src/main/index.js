@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain} from 'electron'
+import { app, BrowserWindow} from 'electron'
 import '../renderer/store'
 
 /**
@@ -21,7 +21,7 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000,
+    width: 384,
     webPreferences:{//网页功能的设置
       webSecurity: false,
       nodeIntegration: true,
@@ -35,12 +35,17 @@ function createWindow () {
     mainWindow = null
   })
 
-  ipcMain.on('synchronous-message', (event, arg) => {
-    if (arg === 'logined') {
-      mainWindow.resize(1000, 1000)
-    }
-  })
+  const ipcMain = require('electron').ipcMain;
+  // ipcMain.on('asynchronous-message', function(event, arg) {
+  //   console.log(arg);  // prints "ping"
+  //   event.sender.send('asynchronous-reply', 'pong');
+  // });
 
+  ipcMain.on('synchronous-message', function(event, arg) {
+    if (arg == 'leeks-right') {
+      mainWindow.setSize(1000, 600, true);
+    }
+  });
 
 }
 

@@ -64,6 +64,8 @@
 import {getStockQuotTx, getFundQuot} from "../../api/api";
 import vPinyin from "../../utils/Piny";
 import SearchPage from "./SearchPage.vue";
+import { remote } from 'electron';
+
 // import ipcRenderer from 'electron';
 
 
@@ -93,9 +95,9 @@ export default {
       this.$electron.shell.openExternal(link);
     },
     search() {
-      const {ipcRenderer} = require('electron')
       this.showSearchStockPanel = true;
-      ipcRenderer.sendSync('synchronous-message','logined');
+      const ipcRenderer = require('electron').ipcRenderer;
+      console.log(ipcRenderer.sendSync('synchronous-message', 'leeks-right')); // prints "pong"
     },
     addSelect(code, selectType) {
       console.log(code, selectType)
