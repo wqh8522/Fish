@@ -4,14 +4,14 @@
     <el-container>
       <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
         <el-header>
-          <el-button icon="el-icon-refresh-right" size="mini" @click="refreshStock"/>
-          <el-button icon="el-icon-plus" size="mini" @click="search"/>
-          <el-button icon="el-icon-setting" size="mini"/>
-          <el-button icon="iconfont icon-stick_icon" style="font-size: 10px" size="mini" v-show="!isTop" @click="topWin"/>
-          <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="cancelTopWin"/>
+          <el-button icon="el-icon-refresh-right" size="mini" @click="refreshBtnClick" title="刷新"/>
+          <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
+          <el-button icon="el-icon-setting" size="mini" @click="setBtn" title="设置"/>
+          <el-button icon="iconfont icon-stick_icon" size="mini" v-show="!isTop" @click="openTopWin" title="置顶"/>
+          <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="closeTopWin" title="取消置顶"/>
         </el-header>
         <el-aside>
-          <el-menu :default-openeds="['1', '2']">
+          <el-menu :default-openeds="['1','2']">
             <el-submenu index="1">
               <template slot="title">FUND</template>
               <!-- <i class="el-icon-message"></i> -->
@@ -19,8 +19,10 @@
                   v-for="(val, index) in fundQuotList"
                   :index="val.code"
                   :key="index">
-                <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{val.zd
+                <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
+                  val.zd
                 }}&nbsp;&nbsp;&nbsp;{{ val.name }}
+                <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'fund')"/>
               </el-menu-item
               >
             </el-submenu>
@@ -40,6 +42,7 @@
                   }}&nbsp;&nbsp;&nbsp;&nbsp;{{
                     val.name
                   }}
+                  <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'gp')"/>
                 </el-menu-item>
               </el-menu-item-group>
               <el-menu-item-group title="HK STOCK" v-show="hkStockQuotList.length > 0">
@@ -54,6 +57,8 @@
                   }}&nbsp;&nbsp;&nbsp;&nbsp;{{
                     val.name
                   }}
+                  <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'hk')"/>
+<!--                  <i class="el-icon-minus"/>-->
                 </el-menu-item>
               </el-menu-item-group>
 
@@ -64,14 +69,31 @@
       </el-container>
       <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
         <el-button class="el-icon-close" size="mini" style="float: right;border:none" @click="closePanel"></el-button>
-        <search-page v-bind:fund-codes="stockConfig.fundCodes"
-                     v-bind:a-stock-codes="stockConfig.aStockCodes"
-                     v-bind:hk-stock-codes="stockConfig.hkStockCodes"
+        <search-page v-bind:fund-codes="fundCodes"
+                     v-bind:a-stock-codes="aStockCodes"
+                     v-bind:hk-stock-codes="hkStockCodes"
                      v-bind:add-select="addSelect"
                      v-bind:remove-select="removeSelect"
         ></search-page>
       </el-main>
     </el-container>
+    <el-dialog
+        title="设置"
+        :visible.sync="setDialogVisible"
+        width="95%">
+      <el-form ref="form" label-width="80px">
+        <el-form-item label="隐藏模式">
+          <el-switch  v-model="hideMode"></el-switch>
+        </el-form-item>
+        <el-form-item label="透明度">
+          <el-slider v-model="transparency" @change="transparencyChange" :min="Number(10)"></el-slider>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="setDialogNoBtn">取 消</el-button>
+    <el-button type="primary" @click="setDialogYesBtn">确 定</el-button>
+    </span>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -92,11 +114,13 @@ export default {
       upClass: "el-icon-arrow-up",
       downClass: "el-icon-arrow-down",
       stockConfig: {
-        hideMode: false,
-        fundCodes: [],
-        aStockCodes: [],
-        hkStockCodes: []
+       
       },
+      hideMode: false,
+      fundCodes: [],
+      aStockCodes: [],
+      hkStockCodes: [],
+      transparency: 100,
       isTop: false,
       fundQuotList: [],
       aStockQuotList: [],
@@ -104,7 +128,8 @@ export default {
       showSearchStockPanel: false,
       sliderVal: 20,
       stockInterval: null,
-      fundInterval: null
+      fundInterval: null,
+      setDialogVisible: false
     };
   },
   // created(){
@@ -117,16 +142,18 @@ export default {
   //   }])
   // },
   mounted: function () {
-    const stockC = store.get('stockConfig');
-    if (stockC === undefined) {
-      store.set('stockConfig', this.stockConfig);
-    } else {
-      this.stockConfig = stockC;
+    const stockConfig = store.get('stockConfig');
+    if (stockConfig !== undefined) {
+      this.isHidden = stockConfig.isHidden === undefined ? false : stockConfig.isHidden;
+      this.fundCodes = stockConfig.fundCodes === undefined ? [] : stockConfig.fundCodes;
+      this.aStockCodes = stockConfig.aStockCodes === undefined ? [] : stockConfig.aStockCodes;
+      this.hkStockCodes = stockConfig.hkStockCodes === undefined ? [] : stockConfig.hkStockCodes;
+      this.transparency = stockConfig.transparency === undefined ? 100 : stockConfig.transparency;
     }
     this.refreshStock();
     this.refreshFund();
     this.startInterval();
-
+    this.transparencyChange();
   },
   methods: {
     open(link) {
@@ -137,17 +164,35 @@ export default {
       ipcRenderer.send('asynchronous-message', 'leeks-right-close');
     },
     openSunWin() {
-
     },
-    refreshBtnCLikck() {
+    setDialogNoBtn() {
+      this.setDialogVisible = false;
+     this.transparency = 100;
+      store.set('stockConfig.hideMode',this.hideMode);
+      store.set('stockConfig.transparency',this.transparency);
+    },
+    setDialogYesBtn() {
+      this.setDialogVisible = false;
+      store.set('stockConfig.hideMode',this.hideMode);
+      store.set('stockConfig.transparency',this.transparency);
+    },
+    transparencyChange() {
+      ipcRenderer.send('asynchronous-message', 'leeks-win-transparency',this.transparency/100);
+    },
+    setBtn() {
+      this.setDialogVisible = true;
+    },
+    refreshBtnClick() {
       this.refreshStock();
       this.refreshFund();
     },
-    cancelTopWin() {
+    closeTopWin() {
       this.isTop = false;
+      ipcRenderer.send('asynchronous-message', 'leeks-win-closeTop');
     },
-    topWin() {
+    openTopWin() {
       this.isTop = true;
+      ipcRenderer.send('asynchronous-message', 'leeks-win-openTop');
     },
     search() {
       // ipcRenderer.sendSync('synchronous-message', 'leeks-right');
@@ -161,40 +206,40 @@ export default {
       if (code !== '') {
         switch (selectType) {
           case 'gp':
-            if (this.stockConfig.aStockCodes.indexOf(code) < 0) {
+            if (this.aStockCodes.indexOf(code) < 0) {
               return
             }
-            this.stockConfig.aStockCodes.forEach((item,index,arr) => {
-              if(item === code){
-                arr.splice(index,1)
+           this.aStockCodes.forEach((item, index, arr) => {
+              if (item === code) {
+                arr.splice(index, 1)
               }
             });
             this.refreshStock();
-            store.set('stockConfig.aStockCodes', this.stockConfig.aStockCodes);
+            store.set('stockConfig.aStockCodes',this.aStockCodes);
             break;
           case 'hk':
-            if (this.stockConfig.hkStockCodes.indexOf(code)<0) {
+            if (this.hkStockCodes.indexOf(code) < 0) {
               return
             }
-            this.stockConfig.hkStockCodes.forEach((item,index,arr) => {
-              if(item === code){
-                arr.splice(index,1)
+           this.hkStockCodes.forEach((item, index, arr) => {
+              if (item === code) {
+                arr.splice(index, 1)
               }
             });
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes', this.stockConfig.hkStockCodes);
+            store.set('stockConfig.hkStockCodes',this.hkStockCodes);
             break;
           case 'fund':
-            if (this.stockConfig.fundCodes.indexOf(code)<0) {
+            if (this.fundCodes.indexOf(code) < 0) {
               return
             }
-            this.stockConfig.fundCodes.forEach((item,index,arr) => {
-              if(item === code){
-                arr.splice(index,1)
+           this.fundCodes.forEach((item, index, arr) => {
+              if (item === code) {
+                arr.splice(index, 1)
               }
             });
             this.refreshFund();
-            store.set('stockConfig.fundCodes', this.stockConfig.fundCodes);
+            store.set('stockConfig.fundCodes',this.fundCodes);
             break;
             break
         }
@@ -202,32 +247,31 @@ export default {
       }
     },
     addSelect(code, selectType) {
-      console.log(code, selectType)
       if (code !== '') {
         switch (selectType) {
           case 'gp':
-            if (this.stockConfig.aStockCodes.indexOf(code)>=0) {
+            if (this.aStockCodes.indexOf(code) >= 0) {
               return
             }
-            this.stockConfig.aStockCodes.push(code);
+           this.aStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.aStockCodes', this.stockConfig.aStockCodes);
+            store.set('stockConfig.aStockCodes',this.aStockCodes);
             break;
           case 'hk':
-            if (this.stockConfig.hkStockCodes.indexOf(code)>=0) {
+            if (this.hkStockCodes.indexOf(code) >= 0) {
               return
             }
-            this.stockConfig.hkStockCodes.push(code);
+           this.hkStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes', this.stockConfig.hkStockCodes);
+            store.set('stockConfig.hkStockCodes',this.hkStockCodes);
             break;
           case 'fund':
-            if (this.stockConfig.fundCodes.indexOf(code)>=0) {
+            if (this.fundCodes.indexOf(code) >= 0) {
               return
             }
-            this.stockConfig.fundCodes.push(code);
+           this.fundCodes.push(code);
             this.refreshFund();
-            store.set('stockConfig.fundCodes', this.stockConfig.fundCodes);
+            store.set('stockConfig.fundCodes',this.fundCodes);
             break;
             break
         }
@@ -247,10 +291,10 @@ export default {
       clearInterval(this.fundInterval);
     },
     refreshFund() {
-      if (this.stockConfig.fundCodes.length == 0) {
+      if (this.fundCodes.length == 0) {
         return
       }
-      getFundQuot(this.stockConfig.fundCodes.join(","))
+      getFundQuot(this.fundCodes.join(","))
           .then((response) => {
             this.fundQuotList = new Array();
 
@@ -258,7 +302,7 @@ export default {
             console.log(fundQuotDatas);
             if (fundQuotDatas.length > 0) {
               fundQuotDatas.forEach((element, index, array) => {
-                const name = this.stockConfig.hideMode
+                const name =this.hideMode
                     ? vPinyin.chineseToPinYin(element.SHORTNAME)
                     : element.SHORTNAME;
                 const zd = isNaN(Number(element.GSZZL))
@@ -279,22 +323,22 @@ export default {
           });
     },
     refreshStock() {
-      if ((this.stockConfig.hkStockCodes === undefined || this.stockConfig.hkStockCodes.length  <= 0)
-          && (this.stockConfig.aStockCodes === undefined || this.stockConfig.aStockCodes.length <= 0)) {
+      if ((this.hkStockCodes === undefined ||this.hkStockCodes.length <= 0)
+          && (this.aStockCodes === undefined ||this.aStockCodes.length <= 0)) {
         return
       }
       let searchCode = '';
-      if (this.stockConfig.aStockCodes && this.stockConfig.aStockCodes.length  > 0) {
-        searchCode = this.stockConfig.aStockCodes.join(",");
+      if (this.aStockCodes &&this.aStockCodes.length > 0) {
+        searchCode =this.aStockCodes.join(",");
       }
       searchCode += ','
-      if (this.stockConfig.hkStockCodes && this.stockConfig.hkStockCodes.length  > 0) {
-        searchCode += this.stockConfig.hkStockCodes.join(",");
+      if (this.hkStockCodes &&this.hkStockCodes.length > 0) {
+        searchCode +=this.hkStockCodes.join(",");
       }
+      const newAStockQuotList = new Array();
+      const newHkStockQuotList = new Array();
       getStockQuotTx(searchCode)
           .then((response) => {
-            this.aStockQuotList = new Array();
-            this.hkStockQuotList = new Array();
             var datas = response.data.split("\n");
             if (datas.length > 0) {
               datas.forEach((data) => {
@@ -308,7 +352,7 @@ export default {
 
                 let code = oneStock[0].replace("v_", "");
                 code = code.substr(0, code.lastIndexOf("="));
-                const name = this.stockConfig.hideMode
+                const name =this.hideMode
                     ? vPinyin.chineseToPinYin(oneStock[1])
                     : oneStock[1];
                 const stockQuot = {
@@ -319,17 +363,21 @@ export default {
                   price: oneStock[3],
                 };
                 if (code.startsWith('hk')) {
-                  this.hkStockQuotList.push(stockQuot);
+                  newHkStockQuotList.push(stockQuot);
                 } else {
-                  this.aStockQuotList.push(stockQuot);
+                  newAStockQuotList.push(stockQuot);
                 }
               });
             }
           })
           .catch((error) => {
             console.log(error);
-            this.$message.error("刷新股票数据失败！");
-          });
+            this.$message.error("刷新股票数据失败！")
+          }).finally(() => {
+        this.aStockQuotList = newAStockQuotList;
+        this.hkStockQuotList = newHkStockQuotList;
+      });
+
     }
 
   },

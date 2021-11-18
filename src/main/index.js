@@ -47,13 +47,28 @@ function createWindow () {
   //   }
   // });
 
-  ipcMain.on('asynchronous-message', (event, arg) => {
+  ipcMain.on('asynchronous-message', (event, arg, param) => {
     switch (arg) {
       case 'leeks-right-open':
         mainWindow.setSize(1000, 600, true);
         break;
       case 'leeks-right-close':
         mainWindow.setSize(370, 563, true);
+        break;
+      case 'leeks-win-openTop':
+        if (!mainWindow.isAlwaysOnTop()) {
+          mainWindow.setAlwaysOnTop(true);
+          BrowserWindow.getFocusedWindow().webContents.send('alwaysOnTop','yes');
+        }
+        break;
+      case 'leeks-win-closeTop':
+        if (mainWindow.isAlwaysOnTop()) {
+          mainWindow.setAlwaysOnTop(false);
+          BrowserWindow.getFocusedWindow().webContents.send('alwaysOnTop', 'no');
+        }
+      break;
+      case 'leeks-win-transparency':
+        mainWindow.setOpacity(param)
         break;
     }
   })

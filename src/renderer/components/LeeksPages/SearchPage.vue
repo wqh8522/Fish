@@ -32,7 +32,7 @@
           ></el-button>
           <el-button
               icon="el-icon-minus"
-              style="float: right; padding: 3px 0; border: none"
+              style="float: right; padding: 1px 0; border: none;"
               v-show="val.isExist"
               size="medium"
               @click="removeSelectM(val.code)"
