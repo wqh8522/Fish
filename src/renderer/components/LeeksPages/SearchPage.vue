@@ -85,6 +85,7 @@ export default {
         this.searchStock('hk', this.hkStockCodes)
       } else if (this.select === "fund") {
         // 搜索基金
+        this.searchStock('jj', this.fundCodes)
       }
     },
     searchStock(type, existCode) {
@@ -99,7 +100,7 @@ export default {
             searchResList.forEach((item) => {
               const itemList = item.split("~");
               this.tableDataList.push({
-                code: itemList[0] + itemList[1],
+                code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
                 name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
                 isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
               })
