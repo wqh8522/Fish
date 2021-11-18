@@ -1,0 +1,30 @@
+{
+  "id": "2936783",
+  "name": "Fish",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "2119422",
+      "name": "置顶",
+      "font_class": "stick_icon",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "8606080",
+      "name": "取消置顶",
+      "font_class": "quxiaozhiding",
+      "unicode": "e6eb",
+      "unicode_decimal": 59115
+    },
+    {
+      "icon_id": "3804793",
+      "name": "鸡腿",
+      "font_class": "jitui",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    }
+  ]
+}

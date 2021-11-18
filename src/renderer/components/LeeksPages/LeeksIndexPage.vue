@@ -5,8 +5,10 @@
       <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
         <el-header>
           <el-button icon="el-icon-refresh-right" size="mini" @click="refreshStock"/>
-          <el-button icon="el-icon-search" size="mini" @click="search"/>
+          <el-button icon="el-icon-plus" size="mini" @click="search"/>
           <el-button icon="el-icon-setting" size="mini"/>
+          <el-button icon="iconfont icon-stick_icon" style="font-size: 10px" size="mini" v-show="!isTop" @click="topWin"/>
+          <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="cancelTopWin"/>
         </el-header>
         <el-aside>
           <el-menu :default-openeds="['1', '2']">
@@ -95,6 +97,7 @@ export default {
         aStockCodes: [],
         hkStockCodes: []
       },
+      isTop: false,
       fundQuotList: [],
       aStockQuotList: [],
       hkStockQuotList: [],
@@ -140,7 +143,12 @@ export default {
       this.refreshStock();
       this.refreshFund();
     },
-
+    cancelTopWin() {
+      this.isTop = false;
+    },
+    topWin() {
+      this.isTop = true;
+    },
     search() {
       // ipcRenderer.sendSync('synchronous-message', 'leeks-right');
       // ipcRenderer.on('asynchronous-reply', (event, arg) => {})
@@ -150,7 +158,6 @@ export default {
       }, 100);
     },
     removeSelect(code, selectType) {
-      console.log(code, selectType)
       if (code !== '') {
         switch (selectType) {
           case 'gp':
@@ -194,7 +201,6 @@ export default {
 
       }
     },
-
     addSelect(code, selectType) {
       console.log(code, selectType)
       if (code !== '') {
