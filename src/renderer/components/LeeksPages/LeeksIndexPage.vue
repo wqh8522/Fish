@@ -146,7 +146,7 @@ export default {
       showSearchStockPanel: false,
       sliderVal: 20,
       stockInterval: null,
-      fundInterval: null,
+      futuInterval: null,
       setDialogVisible: false
     };
   },
@@ -321,6 +321,9 @@ export default {
       this.fundInterval = setInterval(() => {
         this.refreshFund()
       }, 10000);
+      this.futuInterval = setInterval(() => {
+        this.refreshFutu()
+      }, 5000);
     },
     stopInterval() {
       clearInterval(this.stockInterval);
