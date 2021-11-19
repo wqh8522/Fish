@@ -23,9 +23,19 @@ export function searchStockTx(searchKey, type) {
 // 21,22,23,24,25,26 基金
 // 11,12,13,14,15    沪深
 // 31,33,32          港股
-export function searchStockSina(searchKey) {
+// 85 				 期货
+export function searchStockSina(searchKey, type) {
+	let searchType = '';
+	switch (type) {
+		case 'hk':
+			searchType='31,33,32'
+			break;
+		case 'futu':
+			searchType = '85';
+			break;
+	}
 	return request({
-		url: 'http://suggest3.sinajs.cn/suggest/type=2&key=' + searchKey,
+		url: 'http://suggest3.sinajs.cn/suggest/type=' + searchType +'&key=' + searchKey,
 		method: 'get'
 	})
 }

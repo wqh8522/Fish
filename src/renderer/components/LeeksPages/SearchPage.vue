@@ -10,6 +10,7 @@
           <el-option label="A股" value="gp"></el-option>
           <el-option label="港股" value="hk"></el-option>
           <el-option label="基金" value="fund"></el-option>
+          <el-option label="期货" value="futu"></el-option>
         </el-select>
         <el-button
             slot="append"
@@ -51,7 +52,7 @@
 </template>
 
 <script>
-import {searchStockTx} from "../../api/api";
+import {searchStockTx, searchStockSina} from "../../api/api";
 
 export default {
   name: "search-page",
@@ -59,8 +60,9 @@ export default {
     fundCodes: Array,
     aStockCodes: Array,
     hkStockCodes: Array,
-    addSelect:{type: Function},
-    removeSelect:{type: Function}
+    futuCodes: Array,
+    addSelect: {type: Function},
+    removeSelect: {type: Function}
   },
   data() {
     return {
@@ -86,28 +88,50 @@ export default {
       } else if (this.select === "fund") {
         // 搜索基金
         this.searchStock('jj', this.fundCodes)
+      } else if (this.select === "futu") {
+        // 搜索基金
+        this.searchFutu()
       }
+    },
+    searchFutu() {
+      searchStockSina(this.searchText, this.select).then((res) => {
+        const searchResList = res.data.replace('var suggestvalue=', '').replaceAll('"','').split(';');
+        console.log(searchResList)
+        searchResList.forEach((item) => {
+          if (item === '') {
+            return;
+          }
+          const itemList = item.split(",");
+          this.tableDataList.push({
+            code: itemList[2],
+            name: itemList[2] + ' | ' + itemList[4] + ' | ' + itemList[0] + ' | ' + '期货',
+            isExist: this.futuCodes.indexOf(itemList[0] + itemList[1]) >= 0
+          })
+        })
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("搜索失败");
+      });
     },
     searchStock(type, existCode) {
       // 搜索股票
-      searchStockTx(this.searchText, type)
-          .then((res) => {
-            const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
-            if (searchResList.length <= 0 || searchResList[0] === 'N;') {
-              return;
-            }
-            console.log(searchResList)
-            searchResList.forEach((item) => {
-              const itemList = item.split("~");
-              this.tableDataList.push({
-                code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
-                name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
-                isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
-              })
-            })
-          }).catch((error) => {
+      searchStockTx(this.searchText, type).then((res) => {
+        const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
+        if (searchResList.length <= 0 || searchResList[0] === 'N;') {
+          return;
+        }
+        console.log(searchResList)
+        searchResList.forEach((item) => {
+          const itemList = item.split("~");
+          this.tableDataList.push({
+            code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
+            name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
+            isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
+          })
+        })
+      }).catch((error) => {
         console.log(error);
-        this.$message.error("搜索股票失败");
+        this.$message.error("搜索失败");
       });
     },
     addSelectM(val) {

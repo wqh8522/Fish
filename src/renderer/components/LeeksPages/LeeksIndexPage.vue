@@ -22,7 +22,8 @@
                 <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
                   val.zd
                 }}&nbsp;&nbsp;&nbsp;{{ val.name }}
-                <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'fund')"/>
+                <el-button class="el-icon-minus" size="mini" style="border: none"
+                           @click="removeSelect(val.code, 'fund')"/>
               </el-menu-item
               >
             </el-submenu>
@@ -42,7 +43,8 @@
                   }}&nbsp;&nbsp;&nbsp;&nbsp;{{
                     val.name
                   }}
-                  <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'gp')"/>
+                  <el-button class="el-icon-minus" size="mini" style="border: none"
+                             @click="removeSelect(val.code, 'gp')"/>
                 </el-menu-item>
               </el-menu-item-group>
               <el-menu-item-group title="HK STOCK" v-show="hkStockQuotList.length > 0">
@@ -57,11 +59,27 @@
                   }}&nbsp;&nbsp;&nbsp;&nbsp;{{
                     val.name
                   }}
-                  <el-button class="el-icon-minus"  size="mini" style="border: none" @click="removeSelect(val.code, 'hk')"/>
-<!--                  <i class="el-icon-minus"/>-->
+                  <el-button class="el-icon-minus" size="mini" style="border: none"
+                             @click="removeSelect(val.code, 'hk')"/>
+                  <!--                  <i class="el-icon-minus"/>-->
                 </el-menu-item>
               </el-menu-item-group>
 
+            </el-submenu>
+            <el-submenu index="1">
+              <template slot="title">FUTU</template>
+              <!-- <i class="el-icon-message"></i> -->
+              <el-menu-item
+                  v-for="(val, index) in futuQuotList"
+                  :index="val.code"
+                  :key="index">
+                <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
+                  val.zd
+                }}&nbsp;&nbsp;&nbsp;{{ val.name }}
+                <el-button class="el-icon-minus" size="mini" style="border: none"
+                           @click="removeSelect(val.code, 'fund')"/>
+              </el-menu-item
+              >
             </el-submenu>
           </el-menu>
         </el-aside>
@@ -72,6 +90,7 @@
         <search-page v-bind:fund-codes="fundCodes"
                      v-bind:a-stock-codes="aStockCodes"
                      v-bind:hk-stock-codes="hkStockCodes"
+                     v-bind:futu-codes="fundCodes"
                      v-bind:add-select="addSelect"
                      v-bind:remove-select="removeSelect"
         ></search-page>
@@ -83,7 +102,7 @@
         width="95%">
       <el-form ref="form" label-width="80px">
         <el-form-item label="隐藏模式">
-          <el-switch  v-model="hideMode"></el-switch>
+          <el-switch v-model="hideMode"></el-switch>
         </el-form-item>
         <el-form-item label="透明度">
           <el-slider v-model="transparency" @change="transparencyChange" :min="Number(10)"></el-slider>
@@ -113,18 +132,17 @@ export default {
     return {
       upClass: "el-icon-arrow-up",
       downClass: "el-icon-arrow-down",
-      stockConfig: {
-       
-      },
       hideMode: false,
       fundCodes: [],
       aStockCodes: [],
       hkStockCodes: [],
+      futuCodes: [],
       transparency: 100,
       isTop: false,
       fundQuotList: [],
       aStockQuotList: [],
       hkStockQuotList: [],
+      futuQuotList: [],
       showSearchStockPanel: false,
       sliderVal: 20,
       stockInterval: null,
@@ -167,17 +185,17 @@ export default {
     },
     setDialogNoBtn() {
       this.setDialogVisible = false;
-     this.transparency = 100;
-      store.set('stockConfig.hideMode',this.hideMode);
-      store.set('stockConfig.transparency',this.transparency);
+      this.transparency = 100;
+      store.set('stockConfig.hideMode', this.hideMode);
+      store.set('stockConfig.transparency', this.transparency);
     },
     setDialogYesBtn() {
       this.setDialogVisible = false;
-      store.set('stockConfig.hideMode',this.hideMode);
-      store.set('stockConfig.transparency',this.transparency);
+      store.set('stockConfig.hideMode', this.hideMode);
+      store.set('stockConfig.transparency', this.transparency);
     },
     transparencyChange() {
-      ipcRenderer.send('asynchronous-message', 'leeks-win-transparency',this.transparency/100);
+      ipcRenderer.send('asynchronous-message', 'leeks-win-transparency', this.transparency / 100);
     },
     setBtn() {
       this.setDialogVisible = true;
@@ -209,39 +227,50 @@ export default {
             if (this.aStockCodes.indexOf(code) < 0) {
               return
             }
-           this.aStockCodes.forEach((item, index, arr) => {
+            this.aStockCodes.forEach((item, index, arr) => {
               if (item === code) {
                 arr.splice(index, 1)
               }
             });
             this.refreshStock();
-            store.set('stockConfig.aStockCodes',this.aStockCodes);
+            store.set('stockConfig.aStockCodes', this.aStockCodes);
             break;
           case 'hk':
             if (this.hkStockCodes.indexOf(code) < 0) {
               return
             }
-           this.hkStockCodes.forEach((item, index, arr) => {
+            this.hkStockCodes.forEach((item, index, arr) => {
               if (item === code) {
                 arr.splice(index, 1)
               }
             });
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes',this.hkStockCodes);
+            store.set('stockConfig.hkStockCodes', this.hkStockCodes);
             break;
           case 'fund':
             if (this.fundCodes.indexOf(code) < 0) {
               return
             }
-           this.fundCodes.forEach((item, index, arr) => {
+            this.fundCodes.forEach((item, index, arr) => {
               if (item === code) {
                 arr.splice(index, 1)
               }
             });
             this.refreshFund();
-            store.set('stockConfig.fundCodes',this.fundCodes);
+            store.set('stockConfig.fundCodes', this.fundCodes);
             break;
-            break
+          case 'futu':
+            if (this.futuCodes.indexOf(code) < 0) {
+              return
+            }
+            this.futuCodes.forEach((item, index, arr) => {
+              if (item === code) {
+                arr.splice(index, 1)
+              }
+            });
+            this.refreshFutu();
+            store.set('stockConfig.futuCodes', this.futuCodes);
+            break;
         }
 
       }
@@ -253,27 +282,34 @@ export default {
             if (this.aStockCodes.indexOf(code) >= 0) {
               return
             }
-           this.aStockCodes.push(code);
+            this.aStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.aStockCodes',this.aStockCodes);
+            store.set('stockConfig.aStockCodes', this.aStockCodes);
             break;
           case 'hk':
             if (this.hkStockCodes.indexOf(code) >= 0) {
               return
             }
-           this.hkStockCodes.push(code);
+            this.hkStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes',this.hkStockCodes);
+            store.set('stockConfig.hkStockCodes', this.hkStockCodes);
             break;
           case 'fund':
             if (this.fundCodes.indexOf(code) >= 0) {
               return
             }
-           this.fundCodes.push(code);
+            this.fundCodes.push(code);
             this.refreshFund();
-            store.set('stockConfig.fundCodes',this.fundCodes);
+            store.set('stockConfig.fundCodes', this.fundCodes);
             break;
-            break
+          case 'futu':
+            if (this.futuCodes.indexOf(code) >= 0) {
+              return
+            }
+            this.futuCodes.push(code);
+            this.refreshFutu();
+            store.set('stockConfig.futuCode', this.futuCodes);
+            break;
         }
 
       }
@@ -290,6 +326,10 @@ export default {
       clearInterval(this.stockInterval);
       clearInterval(this.fundInterval);
     },
+    refreshFutu(){
+      // 刷新期货行情
+      console.log(this.futuCodes)
+    },
     refreshFund() {
       if (this.fundCodes.length == 0) {
         return
@@ -302,7 +342,7 @@ export default {
             console.log(fundQuotDatas);
             if (fundQuotDatas.length > 0) {
               fundQuotDatas.forEach((element, index, array) => {
-                const name =this.hideMode
+                const name = this.hideMode
                     ? vPinyin.chineseToPinYin(element.SHORTNAME)
                     : element.SHORTNAME;
                 const zd = isNaN(Number(element.GSZZL))
@@ -323,17 +363,17 @@ export default {
           });
     },
     refreshStock() {
-      if ((this.hkStockCodes === undefined ||this.hkStockCodes.length <= 0)
-          && (this.aStockCodes === undefined ||this.aStockCodes.length <= 0)) {
+      if ((this.hkStockCodes === undefined || this.hkStockCodes.length <= 0)
+          && (this.aStockCodes === undefined || this.aStockCodes.length <= 0)) {
         return
       }
       let searchCode = '';
-      if (this.aStockCodes &&this.aStockCodes.length > 0) {
-        searchCode =this.aStockCodes.join(",");
+      if (this.aStockCodes && this.aStockCodes.length > 0) {
+        searchCode = this.aStockCodes.join(",");
       }
       searchCode += ','
-      if (this.hkStockCodes &&this.hkStockCodes.length > 0) {
-        searchCode +=this.hkStockCodes.join(",");
+      if (this.hkStockCodes && this.hkStockCodes.length > 0) {
+        searchCode += this.hkStockCodes.join(",");
       }
       const newAStockQuotList = new Array();
       const newHkStockQuotList = new Array();
@@ -352,7 +392,7 @@ export default {
 
                 let code = oneStock[0].replace("v_", "");
                 code = code.substr(0, code.lastIndexOf("="));
-                const name =this.hideMode
+                const name = this.hideMode
                     ? vPinyin.chineseToPinYin(oneStock[1])
                     : oneStock[1];
                 const stockQuot = {
