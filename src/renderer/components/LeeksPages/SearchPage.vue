@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="searchPanel">
     <div style="height: 40px">
       <el-input
           placeholder="请输入查询关键字"
@@ -10,7 +10,7 @@
           <el-option label="A股" value="gp"></el-option>
           <el-option label="港股" value="hk"></el-option>
           <el-option label="基金" value="fund"></el-option>
-          <el-option label="期货" value="futu"></el-option>
+<!--          <el-option label="期货" value="futu"></el-option>-->
         </el-select>
         <el-button
             slot="append"
@@ -21,7 +21,7 @@
     </div>
     <div style="height: 100%">
       <el-card class="box-card" v-show="tableDataList.length > 0">
-        <div v-for="val in tableDataList" :key="val.code" class="text item" pe>
+        <div v-for="val in tableDataList" :key="val.code" class="text item" >
           <span> {{ val.name }} </span
           >
           <el-button
@@ -103,8 +103,8 @@ export default {
           }
           const itemList = item.split(",");
           this.tableDataList.push({
-            code: itemList[2],
-            name: itemList[2] + ' | ' + itemList[4] + ' | ' + itemList[0] + ' | ' + '期货',
+            code: itemList[0],
+            name: itemList[2] + ' | ' + itemList[4] + ' | ' + itemList[0],
             isExist: this.futuCodes.indexOf(itemList[0] + itemList[1]) >= 0
           })
         })
@@ -156,23 +156,23 @@ export default {
 </script>
 
 <style>
-.el-select .el-input {
+#searchPanel .el-select .el-input {
   width: 80px;
 }
 
-.input-with-select .el-input-group__prepend {
+#searchPanel .input-with-select .el-input-group__prepend {
   background-color: #fff;
 }
 
-.text {
+#searchPanel .text {
   font-size: 14px;
 }
 
-.item {
+#searchPanel .item {
   padding: 8px 0;
 }
 
-.box-card {
+#searchPanel .box-card {
   width: 100%;
 }
 </style>

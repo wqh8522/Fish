@@ -4,15 +4,29 @@
     <el-container>
       <el-container style="width: 1px; width: 23%;border-right: 1px solid rgb(238, 238, 238);">
         <el-header>
-          <el-button icon="el-icon-refresh-right" size="mini" @click="refreshBtnClick" title="刷新"/>
-          <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
-          <el-button icon="el-icon-setting" size="mini" @click="setBtn" title="设置"/>
-          <el-button icon="iconfont icon-stick_icon" size="mini" v-show="!isTop" @click="openTopWin" title="置顶"/>
-          <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="closeTopWin" title="取消置顶"/>
+          <el-tooltip effect="dark" content="刷新">
+            <el-button icon="el-icon-refresh-right" size="mini" @click="refreshBtnClick"/>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="添加自选">
+            <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="设置">
+            <el-button icon="el-icon-setting" size="mini" @click="setBtn" title="设置"/>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="置顶窗口">
+            <el-button icon="iconfont icon-stick_icon" size="mini" v-show="!isTop" @click="openTopWin"/>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="取消置顶窗口">
+            <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="closeTopWin"/>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="打开小窗口">
+            <el-button icon="iconfont icon-xuanfuchuang" size="mini" @click="openMiniWin"/>
+          </el-tooltip>
+
         </el-header>
         <el-aside>
           <el-menu :default-openeds="['1','2']">
-            <el-submenu index="1">
+            <el-submenu index="1" v-show="fundQuotList.length > 0">
               <template slot="title">FUND</template>
               <!-- <i class="el-icon-message"></i> -->
               <el-menu-item
@@ -27,7 +41,7 @@
               </el-menu-item
               >
             </el-submenu>
-            <el-submenu index="2">
+            <el-submenu index="2" v-show="aStockQuotList.length > 0 || hkStockQuotList.length > 0">
               <template slot="title"
               >STOCK
               </template>
@@ -66,7 +80,7 @@
               </el-menu-item-group>
 
             </el-submenu>
-            <el-submenu index="1">
+            <el-submenu index="3" v-show="futuQuotList.length > 0">
               <template slot="title">FUTU</template>
               <!-- <i class="el-icon-message"></i> -->
               <el-menu-item
@@ -117,12 +131,17 @@
 </template>
 
 <script>
-import {getStockQuotTx, getFundQuot} from "../../api/api";
+import {getStockQuotTx, getFundQuot, futuQutoSina} from "../../api/api";
 import vPinyin from "../../utils/Piny";
 import SearchPage from "./SearchPage.vue";
 import {store} from '../../utils/configUtil';
 
 const ipcRenderer = require('electron').ipcRenderer;
+
+const { WPCResolverDelegate } = require('electron-wpc');
+const TAG = 'tag_for_win_provider';//需填入目标Provider的tagId.
+const resolverDelegate = new WPCResolverDelegate(TAG);//这里需要传入tag以指定Provider
+
 
 export default {
   name: "leeks-index-page",
@@ -160,13 +179,13 @@ export default {
   //   }])
   // },
   mounted: function () {
-    const stockConfig = store.get('stockConfig');
-    if (stockConfig !== undefined) {
-      this.isHidden = stockConfig.isHidden === undefined ? false : stockConfig.isHidden;
-      this.fundCodes = stockConfig.fundCodes === undefined ? [] : stockConfig.fundCodes;
-      this.aStockCodes = stockConfig.aStockCodes === undefined ? [] : stockConfig.aStockCodes;
-      this.hkStockCodes = stockConfig.hkStockCodes === undefined ? [] : stockConfig.hkStockCodes;
-      this.transparency = stockConfig.transparency === undefined ? 100 : stockConfig.transparency;
+    const leeksConfig = store.get('leeksConfig');
+    if (leeksConfig !== undefined) {
+      this.isHidden = leeksConfig.isHidden === undefined ? false : leeksConfig.isHidden;
+      this.fundCodes = leeksConfig.fundCodes === undefined ? [] : leeksConfig.fundCodes;
+      this.aStockCodes = leeksConfig.aStockCodes === undefined ? [] : leeksConfig.aStockCodes;
+      this.hkStockCodes = leeksConfig.hkStockCodes === undefined ? [] : leeksConfig.hkStockCodes;
+      this.transparency = leeksConfig.transparency === undefined ? 100 : leeksConfig.transparency;
     }
     this.refreshStock();
     this.refreshFund();
@@ -181,18 +200,22 @@ export default {
       this.showSearchStockPanel = false;
       ipcRenderer.send('asynchronous-message', 'leeks-right-close');
     },
-    openSunWin() {
+    openMiniWin() {
+    //渲染进程中使用
+      ipcRenderer.send('openStockMiniWindow');//打开
+      // ipcRenderer.send('minimizeCalendarWindow');//最小化
+      // ipcRenderer.send('closeCalendarWindow');//关闭
     },
     setDialogNoBtn() {
       this.setDialogVisible = false;
       this.transparency = 100;
-      store.set('stockConfig.hideMode', this.hideMode);
-      store.set('stockConfig.transparency', this.transparency);
+      store.set('leeksConfig.hideMode', this.hideMode);
+      store.set('leeksConfig.transparency', this.transparency);
     },
     setDialogYesBtn() {
       this.setDialogVisible = false;
-      store.set('stockConfig.hideMode', this.hideMode);
-      store.set('stockConfig.transparency', this.transparency);
+      store.set('leeksConfig.hideMode', this.hideMode);
+      store.set('leeksConfig.transparency', this.transparency);
     },
     transparencyChange() {
       ipcRenderer.send('asynchronous-message', 'leeks-win-transparency', this.transparency / 100);
@@ -233,7 +256,8 @@ export default {
               }
             });
             this.refreshStock();
-            store.set('stockConfig.aStockCodes', this.aStockCodes);
+            store.set('leeksConfig.aStockCodes', this.aStockCodes);
+            this.sendSelectChangeMsg();
             break;
           case 'hk':
             if (this.hkStockCodes.indexOf(code) < 0) {
@@ -245,7 +269,8 @@ export default {
               }
             });
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes', this.hkStockCodes);
+            store.set('leeksConfig.hkStockCodes', this.hkStockCodes);
+            this.sendSelectChangeMsg();
             break;
           case 'fund':
             if (this.fundCodes.indexOf(code) < 0) {
@@ -257,7 +282,7 @@ export default {
               }
             });
             this.refreshFund();
-            store.set('stockConfig.fundCodes', this.fundCodes);
+            store.set('leeksConfig.fundCodes', this.fundCodes);
             break;
           case 'futu':
             if (this.futuCodes.indexOf(code) < 0) {
@@ -269,7 +294,7 @@ export default {
               }
             });
             this.refreshFutu();
-            store.set('stockConfig.futuCodes', this.futuCodes);
+            store.set('leeksConfig.futuCodes', this.futuCodes);
             break;
         }
 
@@ -284,7 +309,8 @@ export default {
             }
             this.aStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.aStockCodes', this.aStockCodes);
+            store.set('leeksConfig.aStockCodes', this.aStockCodes);
+            this.sendSelectChangeMsg();
             break;
           case 'hk':
             if (this.hkStockCodes.indexOf(code) >= 0) {
@@ -292,7 +318,8 @@ export default {
             }
             this.hkStockCodes.push(code);
             this.refreshStock();
-            store.set('stockConfig.hkStockCodes', this.hkStockCodes);
+            store.set('leeksConfig.hkStockCodes', this.hkStockCodes);
+            this.sendSelectChangeMsg();
             break;
           case 'fund':
             if (this.fundCodes.indexOf(code) >= 0) {
@@ -300,7 +327,7 @@ export default {
             }
             this.fundCodes.push(code);
             this.refreshFund();
-            store.set('stockConfig.fundCodes', this.fundCodes);
+            store.set('leeksConfig.fundCodes', this.fundCodes);
             break;
           case 'futu':
             if (this.futuCodes.indexOf(code) >= 0) {
@@ -308,11 +335,24 @@ export default {
             }
             this.futuCodes.push(code);
             this.refreshFutu();
-            store.set('stockConfig.futuCode', this.futuCodes);
+            store.set('leeksConfig.futuCode', this.futuCodes);
             break;
         }
-
       }
+    },
+    sendSelectChangeMsg() {
+      // （可选）可设置超时时间，如果超时时间内没有返回结果，则将catch timeout error.
+      // resolverDelegate.setTimeOut(6 * 1000);//default is 5s.
+      //发送消息
+      resolverDelegate.send('select_stock_change')
+          .then(res => {
+            //结果返回
+            console.log('<-update_user_table res',res);
+          })
+          .catch(e => {
+            //处理失败
+            console.error('<-receive error msg:', e)
+          });
     },
     startInterval() {
       this.stockInterval = setInterval(() => {
@@ -321,53 +361,61 @@ export default {
       this.fundInterval = setInterval(() => {
         this.refreshFund()
       }, 10000);
-      this.futuInterval = setInterval(() => {
-        this.refreshFutu()
-      }, 5000);
+      // this.futuInterval = setInterval(() => {
+      //   this.refreshFutu()
+      // }, 5000);
     },
     stopInterval() {
       clearInterval(this.stockInterval);
       clearInterval(this.fundInterval);
     },
-    refreshFutu(){
+    refreshFutu() {
       // 刷新期货行情
-      console.log(this.futuCodes)
+      if (this.futuCodes.length == 0) {
+        return
+      }
+      futuQutoSina(this.futuCodes.join(",")).then((response) => {
+        console.log(response.data)
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("刷新期货数据失败！");
+      });
     },
     refreshFund() {
       if (this.fundCodes.length == 0) {
+        this.fundQuotList = new Array();
         return
       }
-      getFundQuot(this.fundCodes.join(","))
-          .then((response) => {
-            this.fundQuotList = new Array();
-
-            const fundQuotDatas = response.data.Datas;
-            console.log(fundQuotDatas);
-            if (fundQuotDatas.length > 0) {
-              fundQuotDatas.forEach((element, index, array) => {
-                const name = this.hideMode
-                    ? vPinyin.chineseToPinYin(element.SHORTNAME)
-                    : element.SHORTNAME;
-                const zd = isNaN(Number(element.GSZZL))
-                    ? element.NAVCHGRT
-                    : element.GSZZL;
-                this.fundQuotList.push({
-                  code: element.FCODE,
-                  name: "「" + name + "」",
-                  zd: zd + "%",
-                  isDown: zd.startsWith("-"),
-                });
-              });
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-            this.$message.error("刷新基金数据失败！");
+      getFundQuot(this.fundCodes.join(",")).then((response) => {
+        this.fundQuotList = new Array();
+        const fundQuotDatas = response.data.Datas;
+        console.log(fundQuotDatas);
+        if (fundQuotDatas.length > 0) {
+          fundQuotDatas.forEach((element, index, array) => {
+            const name = this.hideMode
+                ? vPinyin.chineseToPinYin(element.SHORTNAME)
+                : element.SHORTNAME;
+            const zd = isNaN(Number(element.GSZZL))
+                ? element.NAVCHGRT
+                : element.GSZZL;
+            this.fundQuotList.push({
+              code: element.FCODE,
+              name: "「" + name + "」",
+              zd: zd + "%",
+              isDown: zd.startsWith("-"),
+            });
           });
+        }
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("刷新基金数据失败！");
+      });
     },
     refreshStock() {
       if ((this.hkStockCodes === undefined || this.hkStockCodes.length <= 0)
           && (this.aStockCodes === undefined || this.aStockCodes.length <= 0)) {
+        this.aStockQuotList = new Array();
+        this.hkStockQuotList = new Array();
         return
       }
       let searchCode = '';
@@ -380,43 +428,41 @@ export default {
       }
       const newAStockQuotList = new Array();
       const newHkStockQuotList = new Array();
-      getStockQuotTx(searchCode)
-          .then((response) => {
-            var datas = response.data.split("\n");
-            if (datas.length > 0) {
-              datas.forEach((data) => {
-                if (data === null || data === "") {
-                  return;
-                }
-                let oneStock = data.split("~");
-                if (oneStock[0].startsWith('v_pv_none_match')) {
-                  return;
-                }
-
-                let code = oneStock[0].replace("v_", "");
-                code = code.substr(0, code.lastIndexOf("="));
-                const name = this.hideMode
-                    ? vPinyin.chineseToPinYin(oneStock[1])
-                    : oneStock[1];
-                const stockQuot = {
-                  code: code,
-                  name: "「" + name + "」",
-                  zd: oneStock[32] + '%',
-                  isDown: oneStock[32].startsWith("-"),
-                  price: oneStock[3],
-                };
-                if (code.startsWith('hk')) {
-                  newHkStockQuotList.push(stockQuot);
-                } else {
-                  newAStockQuotList.push(stockQuot);
-                }
-              });
+      getStockQuotTx(searchCode).then((response) => {
+        var datas = response.data.split("\n");
+        if (datas.length > 0) {
+          datas.forEach((data) => {
+            if (data === null || data === "") {
+              return;
             }
-          })
-          .catch((error) => {
-            console.log(error);
-            this.$message.error("刷新股票数据失败！")
-          }).finally(() => {
+            let oneStock = data.split("~");
+            if (oneStock[0].startsWith('v_pv_none_match')) {
+              return;
+            }
+
+            let code = oneStock[0].replace("v_", "");
+            code = code.substr(0, code.lastIndexOf("="));
+            const name = this.hideMode
+                ? vPinyin.chineseToPinYin(oneStock[1])
+                : oneStock[1];
+            const stockQuot = {
+              code: code,
+              name: "「" + name + "」",
+              zd: oneStock[32] + '%',
+              isDown: oneStock[32].startsWith("-"),
+              price: oneStock[3],
+            };
+            if (code.startsWith('hk')) {
+              newHkStockQuotList.push(stockQuot);
+            } else {
+              newAStockQuotList.push(stockQuot);
+            }
+          });
+        }
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("刷新股票数据失败！")
+      }).finally(() => {
         this.aStockQuotList = newAStockQuotList;
         this.hkStockQuotList = newHkStockQuotList;
       });
@@ -428,9 +474,6 @@ export default {
 </script>
 
 <style>
-#wrapper {
-  max-height: 100%;
-}
 
 #out {
   height: 99%;
@@ -438,14 +481,14 @@ export default {
   border-radius: 5px;
 }
 
-.el-submenu {
+#out .el-submenu {
   border-bottom: 1px solid #eee;
   border-right: none;
   /* height: 25px; */
 }
 
 
-.el-aside {
+#out .el-aside {
   color: #eee;
   background-color: white;
   /* background-color: rgb(238, 241, 246);  */
@@ -454,30 +497,27 @@ export default {
   border-right: none;
 }
 
-.el-submenu__title {
+#out .el-submenu__title {
   padding-left: 5px !important;
   line-height: 30px;
   height: 30px;
   font-size: 12px;
 }
 
-.el-menu {
+#out .el-menu {
   border-right: none;
 }
 
-.el-submenu .el-menu-item {
+#out .el-submenu .el-menu-item {
   padding-left: 10px !important;
   line-height: 30px;
   height: 30px;
 }
 
-.el-header {
+#out .el-header {
   padding: 5px 0px 0px 5px;
   height: 40px !important;
   border-bottom: 1px solid rgb(238, 238, 238);
 }
 
-/* .el-submenu > i {
-  font-size: 14px;
-} */
 </style>

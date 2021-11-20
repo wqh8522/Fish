@@ -39,6 +39,14 @@ export function searchStockSina(searchKey, type) {
 		method: 'get'
 	})
 }
+//https://hq.sinajs.cn/?_=1637372495829/&list=M2205,M2207,M2208,M2203,M2209,M2211
+export function futuQutoSina(codes) {
+	return request({
+		url: 'https://hq.sinajs.cn/?_=' + new Date().getTime() + '/&list=' + codes,
+		method: 'get'
+	})
+}
+
 
 /** ===================天天基金相关接口============================*/
 
