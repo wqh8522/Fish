@@ -31,7 +31,7 @@ function createWindow() {
      */
     mainWindow = new BrowserWindow({
         height: 563,
-        width: 370,
+        width: 400,
         useContentSize: true,
         autoHideMenuBar: true,
         webPreferences: {//网页功能的设置
@@ -51,10 +51,10 @@ function createWindow() {
     ipcMain.on('asynchronous-message', (event, arg, param) => {
         switch (arg) {
             case 'leeks-right-open':
-                mainWindow.setSize(1000, 600, true);
+                mainWindow.setSize(800, 600, true);
                 break;
             case 'leeks-right-close':
-                mainWindow.setSize(370, 563, true);
+                mainWindow.setSize(400, 563, true);
                 break;
             case 'leeks-win-openTop':
                 if (!mainWindow.isAlwaysOnTop()) {

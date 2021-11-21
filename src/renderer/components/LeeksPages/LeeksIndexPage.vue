@@ -7,9 +7,24 @@
           <el-tooltip effect="dark" content="刷新">
             <el-button icon="el-icon-refresh-right" size="mini" @click="refreshBtnClick"/>
           </el-tooltip>
-          <el-tooltip effect="dark" content="添加自选">
+          <el-popover
+              placement="bottom"
+              width="350"
+              style="height: 100%"
+              trigger="manual"
+              v-model="showSearchStockPanel">
+            <search-page v-bind:fund-codes="fundCodes"
+                         v-bind:a-stock-codes="aStockCodes"
+                         v-bind:hk-stock-codes="hkStockCodes"
+                         v-bind:futu-codes="fundCodes"
+                         v-bind:add-select="addSelect"
+                         v-bind:remove-select="removeSelect"
+            ></search-page>
+            <el-button slot="reference" size="mini" @click="search" :class="!showSearchStockPanel ? 'el-icon-plus' : 'el-icon-close'"></el-button>
+          </el-popover>
+<!--          <el-tooltip effect="dark" content="添加自选">
             <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
-          </el-tooltip>
+          </el-tooltip>-->
           <el-tooltip effect="dark" content="设置">
             <el-button icon="el-icon-setting" size="mini" @click="setBtn" title="设置"/>
           </el-tooltip>
@@ -99,7 +114,7 @@
         </el-aside>
 
       </el-container>
-      <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
+<!--      <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
         <el-button class="el-icon-close" size="mini" style="float: right;border:none" @click="closePanel"></el-button>
         <search-page v-bind:fund-codes="fundCodes"
                      v-bind:a-stock-codes="aStockCodes"
@@ -108,7 +123,7 @@
                      v-bind:add-select="addSelect"
                      v-bind:remove-select="removeSelect"
         ></search-page>
-      </el-main>
+      </el-main>-->
     </el-container>
     <el-dialog
         title="设置"
@@ -198,7 +213,7 @@ export default {
     },
     closePanel() {
       this.showSearchStockPanel = false;
-      ipcRenderer.send('asynchronous-message', 'leeks-right-close');
+      // ipcRenderer.send('asynchronous-message', 'leeks-right-close');
     },
     openMiniWin() {
     //渲染进程中使用
@@ -238,10 +253,8 @@ export default {
     search() {
       // ipcRenderer.sendSync('synchronous-message', 'leeks-right');
       // ipcRenderer.on('asynchronous-reply', (event, arg) => {})
-      ipcRenderer.send('asynchronous-message', 'leeks-right-open');
-      setTimeout(() => {
-        this.showSearchStockPanel = true;
-      }, 100);
+      // ipcRenderer.send('asynchronous-message', 'leeks-right-open');
+      this.showSearchStockPanel = !this.showSearchStockPanel;
     },
     removeSelect(code, selectType) {
       if (code !== '') {
