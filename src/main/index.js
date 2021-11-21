@@ -29,6 +29,7 @@ function createWindow() {
         height: 563,
         width: 370,
         useContentSize: true,
+        autoHideMenuBar: true,
         webPreferences: {//网页功能的设置
             webSecurity: false,
             nodeIntegration: true,

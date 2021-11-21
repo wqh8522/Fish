@@ -96,9 +96,11 @@ export default {
     },
     mouseOver() {
       this.showCloseBtn = true;
+      console.log(this.showCloseBtn)
     },
     mouseLeave() {
       this.showCloseBtn = false;
+      console.log(this.showCloseBtn)
     },
     closeWin() {
       ipcRenderer.send('closeStockMiniWindow');
