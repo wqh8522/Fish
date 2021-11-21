@@ -13,7 +13,7 @@
               style="height: 100%"
               trigger="manual"
               v-model="showSearchStockPanel">
-            <search-page v-bind:fund-codes="fundCodes"
+            <search-page v-if="showSearchStockPanel" v-bind:fund-codes="fundCodes"
                          v-bind:a-stock-codes="aStockCodes"
                          v-bind:hk-stock-codes="hkStockCodes"
                          v-bind:futu-codes="fundCodes"
