@@ -1,4 +1,4 @@
-# fish
+# fisher
 
 > An electron-vue project
 

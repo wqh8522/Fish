@@ -1,30 +1,42 @@
 <template>
-  <div style="height: 100%">
+  <div id="searchPanel">
     <div style="height: 40px">
       <el-input
-        placeholder="请输入内容"
-        v-model="seatchText"
-        class="input-with-select"
+          placeholder="请输入查询关键字"
+          v-model="searchText"
+          class="input-with-select"
       >
-        <el-select v-model="select" slot="prepend" placeholder="请选择">
-          <el-option label="股票" value="stock"></el-option>
+        <el-select v-model="select" slot="prepend" placeholder="请选择" @change="selectChange">
+          <el-option label="A股" value="gp"></el-option>
+          <el-option label="港股" value="hk"></el-option>
           <el-option label="基金" value="fund"></el-option>
+<!--          <el-option label="期货" value="futu"></el-option>-->
         </el-select>
         <el-button
-          slot="append"
-          icon="el-icon-search"
-          @click="searchBtn"
+            slot="append"
+            icon="el-icon-search"
+            @click="searchBtn"
         ></el-button>
       </el-input>
     </div>
     <div style="height: 100%">
       <el-card class="box-card" v-show="tableDataList.length > 0">
-        <div v-for="val in tableDataList" :key="val.code" class="text item">
+        <div v-for="val in tableDataList" :key="val.code" class="text item" >
           <span> {{ val.name }} </span
-          ><el-button
-            icon="el-icon-plus"
-            style="float: right; padding: 3px 0; border: none"
-            @click="addZx(val.code)"
+          >
+          <el-button
+              icon="el-icon-plus"
+              style="float: right; padding: 3px 0; border: none"
+              size="medium"
+              v-show="!val.isExist"
+              @click="addSelectM(val.code)"
+          ></el-button>
+          <el-button
+              icon="el-icon-minus"
+              style="float: right; padding: 1px 0; border: none;"
+              v-show="val.isExist"
+              size="medium"
+              @click="removeSelectM(val.code)"
           ></el-button>
         </div>
       </el-card>
@@ -40,60 +52,130 @@
 </template>
 
 <script>
-import { searchStockSina,searchStockTx } from "../../api/api";
+import {searchStockTx, searchStockSina} from "../../api/api";
+
 export default {
   name: "search-page",
+  props: {
+    fundCodes: Array,
+    aStockCodes: Array,
+    hkStockCodes: Array,
+    futuCodes: Array,
+    addSelect: {type: Function},
+    removeSelect: {type: Function}
+  },
   data() {
     return {
-      select: "stock",
-      seatchText: "",
+      select: "gp",
+      searchText: "",
       showHeader: true,
-      tableDataList: [],
+      tableDataList: []
     };
   },
-  mounted: function () {},
+  mounted: function () {
+  },
   methods: {
+    selectChange() {
+      this.tableDataList = new Array();
+    },
     searchBtn() {
-      if (this.seatchText === "") {
+      if (this.searchText === "") {
         return;
       }
-      if (this.select === "stock") {
-        // 搜索股票
-        searchStockTx(this.seatchText)
-          .then((res) => {
-            console.log(res.data);
-          })
-          .catch((error) => {
-            console.log(error);
-            this.$message.error("搜索股票失败");
-          });
+      this.tableDataList = new Array();
+      if (this.select === "gp") {
+        this.searchStock('gp', this.aStockCodes)
+      } else if (this.select === 'hk') {
+        // 搜索港股
+        this.searchStock('hk', this.hkStockCodes)
       } else if (this.select === "fund") {
         // 搜索基金
+        this.searchStock('jj', this.fundCodes)
+      } else if (this.select === "futu") {
+        // 搜索基金
+        this.searchFutu()
       }
     },
-    addZx(val) {
-      console.log(val);
+    searchFutu() {
+      searchStockSina(this.searchText, this.select).then((res) => {
+        const searchResList = res.data.replace('var suggestvalue=', '').replaceAll('"','').split(';');
+        console.log(searchResList)
+        searchResList.forEach((item) => {
+          if (item === '') {
+            return;
+          }
+          const itemList = item.split(",");
+          this.tableDataList.push({
+            code: itemList[0],
+            name: itemList[2] + ' | ' + itemList[4] + ' | ' + itemList[0],
+            isExist: this.futuCodes.indexOf(itemList[0] + itemList[1]) >= 0
+          })
+        })
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("搜索失败");
+      });
     },
+    searchStock(type, existCode) {
+      // 搜索股票
+      searchStockTx(this.searchText, type).then((res) => {
+        const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
+        if (searchResList.length <= 0 || searchResList[0] === 'N;') {
+          return;
+        }
+        console.log(searchResList)
+        searchResList.forEach((item) => {
+          const itemList = item.split("~");
+          this.tableDataList.push({
+            code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
+            name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
+            isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
+          })
+        })
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("搜索失败");
+      });
+    },
+    addSelectM(val) {
+      this.addSelect(val, this.select)
+      this.tableDataList.forEach((item) => {
+        if (item.code === val) {
+          item.isExist = true;
+        }
+      })
+    },
+    removeSelectM(val) {
+      this.removeSelect(val, this.select)
+      this.tableDataList.forEach((item) => {
+        if (item.code === val) {
+          item.isExist = false;
+        }
+      })
+
+    }
   },
 };
 </script>
 
 <style>
-.el-select .el-input {
+#searchPanel .el-select .el-input {
   width: 80px;
 }
-.input-with-select .el-input-group__prepend {
+
+#searchPanel .input-with-select .el-input-group__prepend {
   background-color: #fff;
 }
-.text {
+
+#searchPanel .text {
   font-size: 14px;
 }
 
-.item {
+#searchPanel .item {
   padding: 8px 0;
 }
 
-.box-card {
+#searchPanel .box-card {
   width: 100%;
 }
 </style>

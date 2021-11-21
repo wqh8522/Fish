@@ -3,6 +3,7 @@ import axios from 'axios'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import VueElectron from 'vue-electron';
+import './assets/fonts/iconfont/iconfont.css'
 
 
 
@@ -18,7 +19,7 @@ Vue.use(VueElectron)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
-Vue.config.productionTip = false
+Vue.config.productionTip =  false
 
 /* eslint-disable no-new */
 new Vue({
@@ -27,3 +28,4 @@ new Vue({
   store,
   template: '<App/>'
 }).$mount('#app')
+
