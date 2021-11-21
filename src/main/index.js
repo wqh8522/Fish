@@ -1,3 +1,5 @@
+require('@electron/remote/main').initialize();
+
 import {app, BrowserWindow} from 'electron'
 import '../renderer/store'
 const { registProviderWindow, unRegistProviderWindow } = require('electron-wpc');
@@ -114,7 +116,7 @@ function openCalendarWindow() {
     leeksMiniWin = new BrowserWindow({
         width: 189, //悬浮窗口的宽度 比实际DIV的宽度要多2px 因为有1px的边框
         height: 24, //悬浮窗口的高度 比实际DIV的高度要多2px 因为有1px的边框
-        type: 'toolbar',    //创建的窗口类型为工具栏窗口
+        // type: 'toolbar',    //创建的窗口类型为工具栏窗口
         frame: false,   //要创建无边框窗口
         // resizable: false, //禁止窗口大小缩放
         show: false,    //先不让窗口显示
@@ -124,7 +126,7 @@ function openCalendarWindow() {
         transparent: false,
         backgroundColor: 'transparent',
         movable: true,
-        roundedCorners: false,
+        // roundedCorners: false,  // mac下圆角显示
         maximizable: false,
         minimizable: false,
         webPreferences: {//网页功能的设置
@@ -142,6 +144,6 @@ function openCalendarWindow() {
         unRegistProviderWindow(TAG)
     });
     registProviderWindow(leeksMiniWin, TAG);
-
+    require("@electron/remote/main").enable(leeksMiniWin.webContents)
 
 }

@@ -1,15 +1,13 @@
 <template>
 
-  <div id="miniOut" style="height: 100%;width: 100%;-webkit-app-region: no-drag;"
-       @mouseover="mouseOver"
-       @mouseleave="mouseLeave">
-
-    <span>
+  <div id="miniOut" style="height: 100%;width: 100%;">
+    <el-button class="el-icon-close closeBtn" size="mini" v-show="showCloseBtn"
+               style="float: right;border:none; background-color: transparent" @click="closeWin"></el-button>
+    <span style="height: auto; background-color: transparent">
       {{ currentQuotData.name }} &nbsp;{{ currentQuotData.price }} &nbsp;{{ currentQuotData.zd }}
     </span>
 
-    <el-button class="el-icon-close closeBtn" size="mini" v-show="showCloseBtn"
-               style="float: right;border:none" @click="closeWin"></el-button>
+
   </div>
 
 </template>
@@ -24,6 +22,8 @@ const ipcRenderer = require('electron').ipcRenderer;
 
 const {WPCProviderDelegate} = require('electron-wpc');
 const providerDelegate = new WPCProviderDelegate();
+
+const remote = require('@electron/remote')
 
 
 export default {
@@ -64,8 +64,42 @@ export default {
     }, 3000);
     // 监听
     this.onSelectChange();
+    this.mouseEvent();
   },
   methods: {
+    mouseEvent(){
+
+      let win = remote.getCurrentWindow();
+      let biasX = 0;
+      let biasY = 0;
+      document.addEventListener('mouseover', () =>{
+        this.mouseOver();
+      });
+      document.addEventListener('mouseleave', () =>{
+        this.mouseLeave()
+      })
+      document.addEventListener('mousedown', function (e) {
+        console.log(e.button)
+        switch (e.button) {
+          case 0:
+            biasX = e.x;
+            biasY = e.y;
+            document.addEventListener('mousemove', moveEvent);
+            break;
+        }
+      });
+
+      document.addEventListener('mouseup', function () {
+        biasX = 0;
+        biasY = 0;
+        document.removeEventListener('mousemove', moveEvent)
+      });
+
+      function moveEvent(e) {
+        win.setPosition(e.screenX - biasX, e.screenY - biasY)
+      }
+
+    },
     onSelectChange() {
       providerDelegate.on('select_stock_change', (resolve, reject, args) => {
         this.currentSearchCode = '';
@@ -99,7 +133,6 @@ export default {
     },
     mouseOver() {
       this.showCloseBtn = true;
-      console.log(this.showCloseBtn)
     },
     mouseLeave() {
       this.showCloseBtn = false;
@@ -158,15 +191,15 @@ export default {
 </script>
 
 <style>
-#app {
-  -webkit-app-region: drag;
-}
+/*#app {*/
+/*  -webkit-app-region: drag;*/
+/*}*/
 #miniOut {
   font-size: 12px;
 }
 
 .closeBtn {
-  padding: 0;
+  padding: 3px 4px;
 }
 
 
