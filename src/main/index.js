@@ -2,30 +2,61 @@ import fa from "element-ui/src/locale/lang/fa";
 
 require('@electron/remote/main').initialize();
 
-import {app, BrowserWindow} from 'electron'
+
+import {app, Menu, Tray, BrowserWindow,dialog,shell} from 'electron'
 import '../renderer/store'
 const { registProviderWindow, unRegistProviderWindow } = require('electron-wpc');
 const ipcMain = require('electron').ipcMain;
 const TAG = 'tag_for_win_provider';
 
+const path = require('path');
+import { autoUpdater } from "electron-updater";
+
 import el from "element-ui/src/locale/lang/el";
+
+let isDev = true;
 
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
 if (process.env.NODE_ENV !== 'development') {
-    global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+    isDev = false;
+    global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
 let mainWindow
 let leeksMiniWin;
+let tray;
 
 const winURL = process.env.NODE_ENV === 'development'
     ? `http://localhost:9080`
     : `file://${__dirname}/index.html`
 
+
+app.on('ready', ()=> {
+    createTray();
+    listenerMsg();
+    createWindow();
+});
+
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+
+// app.on('activate', () => {
+//     if (mainWindow === null) {
+//         createWindow()
+//     }
+// })
+
 function createWindow() {
+    if (mainWindow !== undefined && mainWindow !== null && typeof (mainWindow) != undefined) {
+        return
+    }
     /**
      * Initial window options
      */
@@ -34,6 +65,7 @@ function createWindow() {
         width: 400,
         useContentSize: true,
         autoHideMenuBar: true,
+        skipTaskbar: true,
         webPreferences: {//网页功能的设置
             webSecurity: false,
             nodeIntegration: true,
@@ -46,7 +78,9 @@ function createWindow() {
     mainWindow.on('closed', () => {
         mainWindow = null
     })
+}
 
+function listenerMsg(){
 
     ipcMain.on('asynchronous-message', (event, arg, param) => {
         switch (arg) {
@@ -96,22 +130,8 @@ function createWindow() {
         }
     });
 
-
 }
 
-app.on('ready', createWindow)
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit()
-    }
-})
-
-app.on('activate', () => {
-    if (mainWindow === null) {
-        createWindow()
-    }
-})
 
 // 创建calendar窗口方法
 function openCalendarWindow() {
@@ -131,6 +151,8 @@ function openCalendarWindow() {
         // roundedCorners: false,  // mac下圆角显示
         maximizable: false,
         minimizable: false,
+        titleBarStyle: 'hidden',
+        skipTaskbar: true,
         webPreferences: {//网页功能的设置
             webSecurity: false,
             nodeIntegration: true,
@@ -147,3 +169,56 @@ function openCalendarWindow() {
     require("@electron/remote/main").enable(leeksMiniWin.webContents)
     // leeksMiniWin.setOpacity(0.1)
 }
+
+function createTray() {
+    const menubarLogo = process.platform === 'darwin' ? `${__static}/macTray.png` : `${__static}/winTray.png`
+    tray = new Tray(menubarLogo)
+    const menuList = [{
+        label: '韭菜模式',
+        click() {
+            createWindow();
+        }
+    },{
+        type: "separator"
+    }, {
+        label: '检查更新',
+        click() {
+           if (autoUpdater.checkForUpdatesAndNotify()) {
+               const options = {
+                   type: 'info',
+                   title: '检查更新',
+                   message: "发现新版本，是否更新？",
+                   buttons: ['是', '否'],
+                   icon: `${__static}/logo.png`
+               }
+               dialog.showMessageBox(null, options).then(result => {
+                   if (result.response === 0) {
+                       autoUpdater.downloadUpdate();
+                   }
+               }).catch(err => {
+                   console.log(err)
+               })
+           } else {
+               const options = {
+                   type: 'info',
+                   title: '检查更新',
+                   message: "当前为最新版本",
+                   buttons: ['确认'],
+                   icon: `${__static}/logo.png`
+               }
+               dialog.showMessageBox(options)
+           }
+        }
+    },{
+        // accelerator: 'CommandOrControl+Alt+X',
+        label: '退出',
+        click() {
+            app.quit();
+        }
+    }]
+    const contextMenu = Menu.buildFromTemplate(menuList)
+    tray.setToolTip('This is my application.')
+    tray.setContextMenu(contextMenu)
+}
+
+
