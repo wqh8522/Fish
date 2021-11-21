@@ -2,8 +2,8 @@
 
   <div id="miniOut" style="height: 100%;width: 100%;">
     <el-button class="el-icon-close closeBtn" size="mini" v-show="showCloseBtn"
-               style="float: right;border:none; background-color: transparent" @click="closeWin"></el-button>
-    <span style="height: auto; background-color: transparent">
+               style="float: right;border:none; " @click="closeWin"></el-button>
+    <span style="height: auto;">
       {{ currentQuotData.name }} &nbsp;{{ currentQuotData.price }} &nbsp;{{ currentQuotData.zd }}
     </span>
 
@@ -196,6 +196,7 @@ export default {
 /*}*/
 #miniOut {
   font-size: 12px;
+  color: #2b2a2a;
 }
 
 .closeBtn {

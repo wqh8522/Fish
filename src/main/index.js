@@ -1,3 +1,5 @@
+import fa from "element-ui/src/locale/lang/fa";
+
 require('@electron/remote/main').initialize();
 
 import {app, BrowserWindow} from 'electron'
@@ -123,8 +125,8 @@ function openCalendarWindow() {
         alwaysOnTop: true,  //窗口是否总是显示在其他窗口之前
         // parent: mainWindow, // win是主窗口
         useContentSize: true,
-        transparent: false,
-        backgroundColor: 'transparent',
+        transparent: true,
+        backgroundColor: '#66FFFFFF',
         movable: true,
         // roundedCorners: false,  // mac下圆角显示
         maximizable: false,
@@ -133,8 +135,6 @@ function openCalendarWindow() {
             webSecurity: false,
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: true,
-            darkTheme: true
         }
     })
     // leeksMiniWin.setIgnoreMouseEvents(true)
@@ -145,5 +145,5 @@ function openCalendarWindow() {
     });
     registProviderWindow(leeksMiniWin, TAG);
     require("@electron/remote/main").enable(leeksMiniWin.webContents)
-
+    // leeksMiniWin.setOpacity(0.1)
 }
