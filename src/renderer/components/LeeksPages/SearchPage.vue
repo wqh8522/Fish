@@ -6,7 +6,7 @@
           v-model="searchText"
           class="input-with-select"
       >
-        <el-select v-model="select" slot="prepend" placeholder="请选择">
+        <el-select v-model="select" slot="prepend" placeholder="请选择" @change="selectChange">
           <el-option label="A股" value="gp"></el-option>
           <el-option label="港股" value="hk"></el-option>
           <el-option label="基金" value="fund"></el-option>
@@ -75,6 +75,9 @@ export default {
   mounted: function () {
   },
   methods: {
+    selectChange() {
+      this.tableDataList = new Array();
+    },
     searchBtn() {
       if (this.searchText === "") {
         return;
