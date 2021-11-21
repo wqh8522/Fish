@@ -135,6 +135,7 @@ function openCalendarWindow() {
             darkTheme: true
         }
     })
+    // leeksMiniWin.setIgnoreMouseEvents(true)
     leeksMiniWin.loadURL(winURL + '#/StockMiniWinPage');
     leeksMiniWin.on('closed', () => {
         leeksMiniWin = undefined

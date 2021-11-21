@@ -1,7 +1,9 @@
 <template>
-  <div id="miniOut" style="height: 100%;width: 100%"
+
+  <div id="miniOut" style="height: 100%;width: 100%;-webkit-app-region: no-drag;"
        @mouseover="mouseOver"
        @mouseleave="mouseLeave">
+
     <span>
       {{ currentQuotData.name }} &nbsp;{{ currentQuotData.price }} &nbsp;{{ currentQuotData.zd }}
     </span>
@@ -9,6 +11,7 @@
     <el-button class="el-icon-close closeBtn" size="mini" v-show="showCloseBtn"
                style="float: right;border:none" @click="closeWin"></el-button>
   </div>
+
 </template>
 
 <script>
@@ -100,7 +103,6 @@ export default {
     },
     mouseLeave() {
       this.showCloseBtn = false;
-      console.log(this.showCloseBtn)
     },
     closeWin() {
       ipcRenderer.send('closeStockMiniWindow');
@@ -156,10 +158,9 @@ export default {
 </script>
 
 <style>
-body {
+#app {
   -webkit-app-region: drag;
 }
-
 #miniOut {
   font-size: 12px;
 }
