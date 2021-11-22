@@ -151,7 +151,7 @@ function openCalendarWindow() {
         // roundedCorners: false,  // mac下圆角显示
         maximizable: false,
         minimizable: false,
-        titleBarStyle: 'hidden',
+        // titleBarStyle: 'hidden',
         skipTaskbar: true,
         webPreferences: {//网页功能的设置
             webSecurity: false,
