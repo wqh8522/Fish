@@ -40,77 +40,50 @@
 
         </el-header>
         <el-aside>
-          <el-menu :default-openeds="['1','2']">
-            <el-submenu index="1" v-show="fundQuotList.length > 0">
-              <template slot="title">FUND</template>
-              <!-- <i class="el-icon-message"></i> -->
-              <el-menu-item
-                  v-for="(val, index) in fundQuotList"
-                  :index="val.code"
-                  :key="index">
-                <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
-                  val.zd
-                }}&nbsp;&nbsp;&nbsp;{{ val.name }}
-                <el-button class="el-icon-minus" size="mini" style="border: none"
-                           @click="removeSelect(val.code, 'fund')"/>
-              </el-menu-item
-              >
-            </el-submenu>
-            <el-submenu index="2" v-show="aStockQuotList.length > 0 || hkStockQuotList.length > 0">
-              <template slot="title"
-              >STOCK
-              </template>
-              <el-menu-item-group title="A STOCK" v-show="aStockQuotList.length > 0">
-                <el-menu-item
-                    v-for="(val, index) in aStockQuotList"
-                    :index="val.code"
-                    :key="index">
-                  <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
-                    val.zd
-                  }}&nbsp;&nbsp;&nbsp;&nbsp;{{
-                    val.price
-                  }}&nbsp;&nbsp;&nbsp;&nbsp;{{
-                    val.name
-                  }}
-                  <el-button class="el-icon-minus" size="mini" style="border: none"
-                             @click="removeSelect(val.code, 'gp')"/>
-                </el-menu-item>
-              </el-menu-item-group>
-              <el-menu-item-group title="HK STOCK" v-show="hkStockQuotList.length > 0">
-                <el-menu-item
-                    v-for="(val, index) in hkStockQuotList"
-                    :index="val.code"
-                    :key="index">
-                  <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
-                    val.zd
-                  }}&nbsp;&nbsp;&nbsp;&nbsp;{{
-                    val.price
-                  }}&nbsp;&nbsp;&nbsp;&nbsp;{{
-                    val.name
-                  }}
-                  <el-button class="el-icon-minus" size="mini" style="border: none"
-                             @click="removeSelect(val.code, 'hk')"/>
-                  <!--                  <i class="el-icon-minus"/>-->
-                </el-menu-item>
-              </el-menu-item-group>
 
-            </el-submenu>
-            <el-submenu index="3" v-show="futuQuotList.length > 0">
-              <template slot="title">FUTU</template>
-              <!-- <i class="el-icon-message"></i> -->
-              <el-menu-item
-                  v-for="(val, index) in futuQuotList"
-                  :index="val.code"
-                  :key="index">
-                <i :class="val.isDown ? downClass : upClass"/>&nbsp;&nbsp;{{
-                  val.zd
-                }}&nbsp;&nbsp;&nbsp;{{ val.name }}
-                <el-button class="el-icon-minus" size="mini" style="border: none"
-                           @click="removeSelect(val.code, 'fund')"/>
-              </el-menu-item
-              >
-            </el-submenu>
-          </el-menu>
+          <el-collapse v-model="activeCollapse" >
+            <el-collapse-item title="FUND" name="fund" >
+              <el-table :show-header="false" :data="fundQuotList" row-key="code">
+                <el-table-column
+                    prop="name"
+                    label="名称">
+                </el-table-column>
+                <el-table-column
+                    prop="zd">
+                </el-table-column>
+              </el-table>
+
+            </el-collapse-item>
+            <el-collapse-item title="STOCK" name="stock" >
+              <el-divider content-position="left" v-show="aStockQuotList.length > 0">a stock</el-divider>
+              <el-table :show-header="false" :data="aStockQuotList" row-key="code" >
+                <el-table-column
+                    prop="name"
+                    label="名称">
+                </el-table-column>
+                <el-table-column
+                    prop="price">
+                </el-table-column>
+                <el-table-column
+                    prop="zd">
+                </el-table-column>
+              </el-table>
+              <el-divider content-position="left" v-show="hkStockQuotList.length > 0">hk stock</el-divider>
+              <el-table :show-header="false" :data="hkStockQuotList" row-key="code">
+                <el-table-column
+                    prop="name"
+                    label="名称">
+                </el-table-column>
+                <el-table-column
+                    prop="price">
+                </el-table-column>
+                <el-table-column
+                    prop="zd">
+                </el-table-column>
+              </el-table>
+            </el-collapse-item>
+
+          </el-collapse>
         </el-aside>
 
       </el-container>
@@ -181,7 +154,8 @@ export default {
       sliderVal: 20,
       stockInterval: null,
       futuInterval: null,
-      setDialogVisible: false
+      setDialogVisible: false,
+      activeCollapse:['stock']
     };
   },
   // created(){
@@ -413,7 +387,7 @@ export default {
                 : element.GSZZL;
             this.fundQuotList.push({
               code: element.FCODE,
-              name: "「" + name + "」",
+              name: name,
               zd: zd + "%",
               isDown: zd.startsWith("-"),
             });
@@ -460,7 +434,7 @@ export default {
                 : oneStock[1];
             const stockQuot = {
               code: code,
-              name: "「" + name + "」",
+              name: name,
               zd: oneStock[32] + '%',
               isDown: oneStock[32].startsWith("-"),
               price: oneStock[3],
@@ -486,7 +460,7 @@ export default {
 };
 </script>
 
-<style>
+<style >
 
 #out {
   height: 99%;
@@ -501,7 +475,7 @@ export default {
 }
 
 
-#out .el-aside {
+.el-aside {
   color: #eee;
   background-color: white;
   /* background-color: rgb(238, 241, 246);  */
@@ -510,27 +484,46 @@ export default {
   border-right: none;
 }
 
-#out .el-submenu__title {
+.el-submenu__title {
   padding-left: 5px !important;
   line-height: 30px;
   height: 30px;
   font-size: 12px;
 }
 
-#out .el-menu {
+.el-menu {
   border-right: none;
 }
 
-#out .el-submenu .el-menu-item {
+.el-submenu .el-menu-item {
   padding-left: 10px !important;
   line-height: 30px;
   height: 30px;
 }
 
-#out .el-header {
+.el-header {
   padding: 5px 0px 0px 5px;
   height: 40px !important;
   border-bottom: 1px solid rgb(238, 238, 238);
 }
 
+.el-table td.el-table__cell {
+  border: none;
+  padding: 2px 0px;
+  /*color: black;*/
+  font-size: 12px;
+  height: 100%;
+}
+
+.el-collapse-item__content {
+  padding-bottom: 0px;
+  border-bottom: none;
+}
+.el-collapse-item__header {
+  height: 25px;
+}
+.el-divider--horizontal{
+  margin: 8px 0px;
+  /*color: #DCDFE6 !important;*/
+}
 </style>
