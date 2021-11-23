@@ -43,23 +43,23 @@
 
           <el-collapse v-model="activeCollapse" >
             <el-collapse-item title="FUND" name="fund" >
-              <el-table :show-header="false" :data="fundQuotList" row-key="code">
+              <el-table :show-header="false" :data="fundQuotList" row-key="code" empty-text=" ">
                 <el-table-column
                     prop="name"
                     label="名称">
                 </el-table-column>
                 <el-table-column
-                    prop="zd">
+                    prop="zd" width="80px">
                 </el-table-column>
               </el-table>
 
             </el-collapse-item>
             <el-collapse-item title="STOCK" name="stock" >
               <el-divider content-position="left" v-show="aStockQuotList.length > 0">a stock</el-divider>
-              <el-table :show-header="false" :data="aStockQuotList" row-key="code" >
+              <el-table :show-header="false" :data="aStockQuotList" row-key="code"  empty-text=" ">
                 <el-table-column
                     prop="name"
-                    label="名称">
+                    label="名称" >
                 </el-table-column>
                 <el-table-column
                     prop="price">
@@ -68,8 +68,8 @@
                     prop="zd">
                 </el-table-column>
               </el-table>
-              <el-divider content-position="left" v-show="hkStockQuotList.length > 0">hk stock</el-divider>
-              <el-table :show-header="false" :data="hkStockQuotList" row-key="code">
+              <el-divider content-position="left" v-if="hkStockQuotList.length > 0">hk stock</el-divider>
+              <el-table :show-header="false" :data="hkStockQuotList" row-key="code" empty-text=" ">
                 <el-table-column
                     prop="name"
                     label="名称">
@@ -158,7 +158,7 @@ export default {
       stockInterval: null,
       futuInterval: null,
       setDialogVisible: false,
-      activeCollapse:['stock'],
+      activeCollapse: new Array(),
       miniStockNum:1
     };
   },
@@ -180,6 +180,13 @@ export default {
       this.hkStockCodes = leeksConfig.hkStockCodes === undefined ? [] : leeksConfig.hkStockCodes;
       this.transparency = leeksConfig.transparency === undefined ? 100 : leeksConfig.transparency;
       this.miniStockNum = leeksConfig.miniStockNum === undefined ? 1 : leeksConfig.miniStockNum;
+    }
+    if (this.fundCodes.length > 0) {
+      this.activeCollapse.push('fund');
+    }
+
+    if (this.aStockCodes.length > 0 || this.hkStockCodes.length > 0) {
+      this.activeCollapse.push('stock');
     }
     this.refreshStock();
     this.refreshFund();
@@ -518,7 +525,7 @@ export default {
   border: none;
   padding: 2px 0px;
   /*color: black;*/
-  font-size: 12px;
+  font-size: 14px;
   height: 100%;
 }
 
