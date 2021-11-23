@@ -5,14 +5,15 @@ require('@electron/remote/main').initialize();
 
 import {app, Menu, Tray, BrowserWindow,dialog,shell} from 'electron'
 import '../renderer/store'
+import {checkUpdate} from "../renderer/utils/updateCheck";
 const { registProviderWindow, unRegistProviderWindow } = require('electron-wpc');
 const ipcMain = require('electron').ipcMain;
 const TAG = 'tag_for_win_provider';
 
 const path = require('path');
-import { autoUpdater } from "electron-updater";
 
-import el from "element-ui/src/locale/lang/el";
+// import el from "element-ui/src/locale/lang/el";
+
 
 let isDev = true;
 
@@ -25,7 +26,7 @@ if (process.env.NODE_ENV !== 'development') {
     global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow
+let leeksMainWin
 let leeksMiniWin;
 let tray;
 
@@ -48,19 +49,19 @@ app.on('window-all-closed', () => {
 })
 
 // app.on('activate', () => {
-//     if (mainWindow === null) {
+//     if (leeksMainWin === null) {
 //         createWindow()
 //     }
 // })
 
 function createWindow() {
-    if (mainWindow !== undefined && mainWindow !== null && typeof (mainWindow) != undefined) {
+    if (leeksMainWin !== undefined && leeksMainWin !== null && typeof (leeksMainWin) != undefined) {
         return
     }
     /**
      * Initial window options
      */
-    mainWindow = new BrowserWindow({
+    leeksMainWin = new BrowserWindow({
         height: 563,
         width: 400,
         useContentSize: true,
@@ -73,10 +74,10 @@ function createWindow() {
         }
     })
 
-    mainWindow.loadURL(winURL)
+    leeksMainWin.loadURL(winURL)
 
-    mainWindow.on('closed', () => {
-        mainWindow = null
+    leeksMainWin.on('closed', () => {
+        leeksMainWin = null
     })
 }
 
@@ -85,25 +86,25 @@ function listenerMsg(){
     ipcMain.on('asynchronous-message', (event, arg, param) => {
         switch (arg) {
             case 'leeks-right-open':
-                mainWindow.setSize(800, 600, true);
+                leeksMainWin.setSize(800, 600, true);
                 break;
             case 'leeks-right-close':
-                mainWindow.setSize(400, 563, true);
+                leeksMainWin.setSize(400, 563, true);
                 break;
             case 'leeks-win-openTop':
-                if (!mainWindow.isAlwaysOnTop()) {
-                    mainWindow.setAlwaysOnTop(true);
+                if (!leeksMainWin.isAlwaysOnTop()) {
+                    leeksMainWin.setAlwaysOnTop(true);
                     BrowserWindow.getFocusedWindow().webContents.send('alwaysOnTop', 'yes');
                 }
                 break;
             case 'leeks-win-closeTop':
-                if (mainWindow.isAlwaysOnTop()) {
-                    mainWindow.setAlwaysOnTop(false);
+                if (leeksMainWin.isAlwaysOnTop()) {
+                    leeksMainWin.setAlwaysOnTop(false);
                     BrowserWindow.getFocusedWindow().webContents.send('alwaysOnTop', 'no');
                 }
                 break;
             case 'leeks-win-transparency':
-                mainWindow.setOpacity(param)
+                leeksMainWin.setOpacity(param)
                 break;
         }
     });
@@ -112,7 +113,7 @@ function listenerMsg(){
         if (!leeksMiniWin){
             openCalendarWindow();
             leeksMiniWin.show();
-            mainWindow.focus();
+            leeksMainWin.focus();
         } else {
 
         }
@@ -143,7 +144,7 @@ function openCalendarWindow() {
         // resizable: false, //禁止窗口大小缩放
         show: false,    //先不让窗口显示
         alwaysOnTop: true,  //窗口是否总是显示在其他窗口之前
-        // parent: mainWindow, // win是主窗口
+        // parent: leeksMainWin, // win是主窗口
         useContentSize: true,
         transparent: true,
         backgroundColor: '#66FFFFFF',
@@ -183,31 +184,7 @@ function createTray() {
     }, {
         label: '检查更新',
         click() {
-           if (autoUpdater.checkForUpdatesAndNotify()) {
-               const options = {
-                   type: 'info',
-                   title: '检查更新',
-                   message: "发现新版本，是否更新？",
-                   buttons: ['是', '否'],
-                   icon: `${__static}/logo.png`
-               }
-               dialog.showMessageBox(null, options).then(result => {
-                   if (result.response === 0) {
-                       autoUpdater.downloadUpdate();
-                   }
-               }).catch(err => {
-                   console.log(err)
-               })
-           } else {
-               const options = {
-                   type: 'info',
-                   title: '检查更新',
-                   message: "当前为最新版本",
-                   buttons: ['确认'],
-                   icon: `${__static}/logo.png`
-               }
-               dialog.showMessageBox(options)
-           }
+            checkUpdate()
         }
     },{
         // accelerator: 'CommandOrControl+Alt+X',
@@ -220,5 +197,6 @@ function createTray() {
     tray.setToolTip('This is my application.')
     tray.setContextMenu(contextMenu)
 }
+
 
 
