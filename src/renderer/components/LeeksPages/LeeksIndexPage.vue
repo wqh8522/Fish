@@ -34,7 +34,7 @@
           <el-tooltip effect="dark" content="取消置顶窗口">
             <el-button icon="iconfont icon-quxiaozhiding" size="mini" v-show="isTop" @click="closeTopWin"/>
           </el-tooltip>
-          <el-tooltip effect="dark" content="打开小窗口">
+          <el-tooltip effect="dark" content="打开股票小窗口">
             <el-button icon="iconfont icon-xuanfuchuang" size="mini" @click="openMiniWin"/>
           </el-tooltip>
 
@@ -101,10 +101,13 @@
     <el-dialog
         title="设置"
         :visible.sync="setDialogVisible"
-        width="95%">
+        width="350px">
       <el-form ref="form" label-width="80px">
         <el-form-item label="隐藏模式">
           <el-switch v-model="hideMode"></el-switch>
+        </el-form-item>
+        <el-form-item label="小窗口显示数量">
+          <el-input-number v-model="miniStockNum" :min="1" :max="aStockCodes.length + hkStockCodes.length"></el-input-number>
         </el-form-item>
         <el-form-item label="透明度">
           <el-slider v-model="transparency" @change="transparencyChange" :min="Number(10)"></el-slider>
@@ -155,7 +158,8 @@ export default {
       stockInterval: null,
       futuInterval: null,
       setDialogVisible: false,
-      activeCollapse:['stock']
+      activeCollapse:['stock'],
+      miniStockNum:1
     };
   },
   // created(){
@@ -175,6 +179,7 @@ export default {
       this.aStockCodes = leeksConfig.aStockCodes === undefined ? [] : leeksConfig.aStockCodes;
       this.hkStockCodes = leeksConfig.hkStockCodes === undefined ? [] : leeksConfig.hkStockCodes;
       this.transparency = leeksConfig.transparency === undefined ? 100 : leeksConfig.transparency;
+      this.miniStockNum = leeksConfig.miniStockNum === undefined ? 1 : leeksConfig.miniStockNum;
     }
     this.refreshStock();
     this.refreshFund();
@@ -182,9 +187,9 @@ export default {
     this.transparencyChange();
   },
   methods: {
-    open(link) {
-      this.$electron.shell.openExternal(link);
-    },
+    // open(link) {
+    //   this.$electron.shell.openExternal(link);
+    // },
     closePanel() {
       this.showSearchStockPanel = false;
       // ipcRenderer.send('asynchronous-message', 'leeks-right-close');
@@ -198,13 +203,15 @@ export default {
     setDialogNoBtn() {
       this.setDialogVisible = false;
       this.transparency = 100;
-      store.set('leeksConfig.hideMode', this.hideMode);
-      store.set('leeksConfig.transparency', this.transparency);
+      // store.set('leeksConfig.hideMode', this.hideMode);
+      // store.set('leeksConfig.transparency', this.transparency);
     },
     setDialogYesBtn() {
       this.setDialogVisible = false;
       store.set('leeksConfig.hideMode', this.hideMode);
       store.set('leeksConfig.transparency', this.transparency);
+      store.set('leeksConfig.miniStockNum', this.miniStockNum);
+      resolverDelegate.send('stock_set_change')
     },
     transparencyChange() {
       ipcRenderer.send('asynchronous-message', 'leeks-win-transparency', this.transparency / 100);

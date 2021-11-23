@@ -1,10 +1,10 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
 
   <div id="miniOut" style="height: 100%;width: 100%;">
     <el-button class="el-icon-close closeBtn" size="mini" v-show="showCloseBtn"
                style="float: right;border:none; " @click="closeWin"></el-button>
-    <span style="height: auto;">
-      {{ currentQuotData.name }} &nbsp;{{ currentQuotData.price }} &nbsp;{{ currentQuotData.zd }}
+    <span style="height: auto;" v-for="item in currentQuotDatas" :key="item.code">
+      {{ item.name }} &nbsp;{{ item.price }} &nbsp;{{ item.zd }} <br>
     </span>
 
 
@@ -34,8 +34,9 @@ export default {
       stockCodes: new Array(),
       hideMode: false,
       queue: new Queue(),
-      currentSearchCode: null,
-      currentQuotData: {},
+      currentSearchCode: [],
+      currentQuotDatas: [{}],
+      miniStockNum: 1
     }
   },
   mounted() {
@@ -44,6 +45,7 @@ export default {
       const aStockCodes = leeksConfig.aStockCodes === undefined ? new Array() : leeksConfig.aStockCodes;
       const hkStockCodes = leeksConfig.hkStockCodes === undefined ? new Array() : leeksConfig.hkStockCodes;
       this.hideMode = leeksConfig.hideMode === undefined ? false : leeksConfig.hideMode;
+      this.miniStockNum = leeksConfig.miniStockNum === undefined ? false : leeksConfig.miniStockNum;
 
       aStockCodes.forEach(value => {
         this.stockCodes.push(value)
@@ -65,6 +67,8 @@ export default {
     // 监听
     this.onSelectChange();
     this.mouseEvent();
+    this.onSetChange();
+
   },
   methods: {
     mouseEvent(){
@@ -98,6 +102,13 @@ export default {
       function moveEvent(e) {
         win.setPosition(e.screenX - biasX, e.screenY - biasY)
       }
+
+    },
+    onSetChange() {
+      providerDelegate.on('stock_set_change', (resolve, reject, args) => {
+        this.hideMode = store.get('leeksConfig.hideMode');
+        this.miniStockNum = store.get('leeksConfig.miniStockNum');
+      });
 
     },
     onSelectChange() {
@@ -141,19 +152,31 @@ export default {
       ipcRenderer.send('closeStockMiniWindow');
     },
     refreshStock() {
-      this.hideMode = store.get('leeksConfig.hideMode')
       if (this.stockCodes.length <= 0 || this.queue.isEmpty()) {
         return
       }
-      const searchCode = this.queue.dequeue();
-      this.currentSearchCode = searchCode;
-      if (searchCode === undefined) {
+      if (this.miniStockNum === null || this.miniStockNum === undefined) {
+        this.miniStockNum = 1;
+      }
+      if (this.miniStockNum > this.queue.size()) {
+        this.miniStockNum = this.queue.size();
+      }
+      let searchCodes = new Array();
+      for (let i = 0; i< this.miniStockNum; i++) {
+        searchCodes.push(this.queue.dequeue());
+      }
+      this.currentSearchCode = searchCodes;
+      if (searchCodes.length <= 0) {
         return;
       }
       // 将当前搜索的code放入队尾
-      this.queue.enqueue(searchCode)
-      getStockQuotTx(searchCode).then((response) => {
-        var datas = response.data.split("\n");
+      for (let j = 0; j < searchCodes.length; j++) {
+        this.queue.enqueue(searchCodes[j])
+      }
+
+      getStockQuotTx(searchCodes.join(",")).then((response) => {
+        this.currentQuotDatas = new Array();
+        const datas = response.data.split("\n");
         if (datas.length > 0) {
           datas.forEach((data) => {
             if (data === null || data === "") {
@@ -169,13 +192,14 @@ export default {
             const name = this.hideMode
                 ? vPinyin.chineseToPinYin(oneStock[1])
                 : oneStock[1];
-            this.currentQuotData = {
+            const currentQuotData = {
               code: code,
               name: name,
               zd: oneStock[32] + '%',
               isDown: oneStock[32].startsWith("-"),
               price: oneStock[3],
             };
+            this.currentQuotDatas.push(currentQuotData);
           });
         }
       }).catch((error) => {
