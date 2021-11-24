@@ -117,25 +117,20 @@ export default {
       });
     },
     searchStock(type, existCode) {
-      // 搜索股票
-      searchStockTx(this.searchText, type).then((res) => {
-        const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
-        if (searchResList.length <= 0 || searchResList[0] === 'N;') {
-          return;
-        }
-        console.log(searchResList)
-        searchResList.forEach((item) => {
-          const itemList = item.split("~");
-          this.tableDataList.push({
-            code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
-            name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
-            isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
-          })
-        })
+      searchStockSina(this.searchText, type).then((res) => {
+          this.tableDataList =  res;
       }).catch((error) => {
         console.log(error);
         this.$message.error("搜索失败");
       });
+
+      // 搜索股票
+      // searchStockTx(this.searchText, type).then((res) => {
+      //   this.tableDataList =  res;
+      // }).catch((error) => {
+      //   console.log(error);
+      //   this.$message.error("搜索失败");
+      // });
     },
     addSelectM(val) {
       this.addSelect(val, this.select)

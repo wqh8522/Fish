@@ -29,9 +29,25 @@ export function getStockQuotTx(codes) {
 
 // 腾讯搜索接口 https://smartbox.gtimg.cn/s3/?v=2&q=22222&t=hk
 export function searchStockTx(searchKey, type) {
+
     return request({
         url: 'https://smartbox.gtimg.cn/s3/?v=2&t=' + type + '&q=' + searchKey,
         method: 'get'
+    }).then((res) => {
+        const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
+        if (searchResList.length <= 0 || searchResList[0] === 'N;') {
+          return;
+        }
+        const resultList = new Array();
+        searchResList.forEach((item) => {
+          const itemList = item.split("~");
+          resultList.push({
+            code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
+            name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
+            // isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
+          })
+        })
+        return resultList;
     })
 }
 
@@ -44,6 +60,12 @@ export function searchStockTx(searchKey, type) {
 export function searchStockSina(searchKey, type) {
     let searchType = '';
     switch (type) {
+        case 'jj':
+            searchType = '21,22,23,24,25,26,27';
+            break;
+        case 'gp':
+            searchType = '11,12,13,14,15';
+            break;
         case 'hk':
             searchType = '31,33,32'
             break;
@@ -51,10 +73,34 @@ export function searchStockSina(searchKey, type) {
             searchType = '85';
             break;
     }
+    const name = 'suggestdata_' + new Date().getTime();
     return request({
-        url: 'http://suggest3.sinajs.cn/suggest/type=' + searchType + '&key=' + searchKey,
-        method: 'get'
-    })
+        url: 'http://suggest3.sinajs.cn/suggest/type=' + searchType,
+        method: 'get',
+        params: {
+            key: searchKey,
+            name: name
+        }
+    }).then((res) => {
+        const resultList = new Array();
+        const resData = res.data.replace('var ' + name + '=', '').replaceAll('\"', '');
+        if (resData === null || resData === ';') {
+            return resultList;
+        }
+        const searchResList = resData.split(';');
+        searchResList.forEach((item) => {
+            if (item === '' || item === undefined || item === null) {
+                return;
+            }
+            const itemList = item.split(",");
+            resultList.push({
+                code: itemList[2],
+                name: itemList[2] + ' | ' + itemList[4]
+            })
+        });
+        return resultList;
+    });
+
 }
 
 //https://hq.sinajs.cn/?_=1637372495829/&list=M2205,M2207,M2208,M2203,M2209,M2211
