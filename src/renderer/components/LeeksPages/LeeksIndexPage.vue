@@ -20,11 +20,12 @@
                          v-bind:add-select="addSelect"
                          v-bind:remove-select="removeSelect"
             ></search-page>
-            <el-button slot="reference" size="mini" @click="search" :class="!showSearchStockPanel ? 'el-icon-plus' : 'el-icon-close'"></el-button>
+            <el-button slot="reference" size="mini" @click="search"
+                       :class="!showSearchStockPanel ? 'el-icon-plus' : 'el-icon-close'"></el-button>
           </el-popover>
-<!--          <el-tooltip effect="dark" content="添加自选">
-            <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
-          </el-tooltip>-->
+          <!--          <el-tooltip effect="dark" content="添加自选">
+                      <el-button icon="el-icon-plus" size="mini" @click="search" title="添加自选"/>
+                    </el-tooltip>-->
           <el-tooltip effect="dark" content="设置">
             <el-button icon="el-icon-setting" size="mini" @click="setBtn" title="设置"/>
           </el-tooltip>
@@ -41,8 +42,8 @@
         </el-header>
         <el-aside>
 
-          <el-collapse v-model="activeCollapse" >
-            <el-collapse-item title="FUND" name="fund" >
+          <el-collapse v-model="activeCollapse">
+            <el-collapse-item title="FUND" name="fund">
               <el-table :show-header="false" :data="fundQuotList" row-key="code" empty-text=" "
                         @row-click="hidRightMenu" @row-contextmenu="rightClick">
                 <el-table-column
@@ -57,11 +58,11 @@
             </el-collapse-item>
             <el-collapse-item title="STOCK" name="stock" @mousedown="hidRightMenu">
               <el-divider content-position="left" v-show="aStockQuotList.length > 0">a stock</el-divider>
-              <el-table :show-header="false" :data="aStockQuotList" row-key="code"  empty-text=" "
+              <el-table :show-header="false" :data="aStockQuotList" row-key="code" empty-text=" "
                         @row-click="hidRightMenu" @row-contextmenu="rightClick">
                 <el-table-column
                     prop="name"
-                    label="名称" >
+                    label="名称">
                 </el-table-column>
                 <el-table-column
                     prop="price">
@@ -72,7 +73,7 @@
               </el-table>
               <el-divider content-position="left" v-if="hkStockQuotList.length > 0">hk stock</el-divider>
               <el-table :show-header="false" :data="hkStockQuotList" row-key="code" empty-text=" "
-                        @row-click="hidRightMenu" @row-contextmenu="rightClick"  @blur="hidRightMenu">
+                        @row-click="hidRightMenu" @row-contextmenu="rightClick" @blur="hidRightMenu">
                 <el-table-column
                     prop="name"
                     label="名称">
@@ -90,19 +91,19 @@
         </el-aside>
 
       </el-container>
-<!--      <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
-        <el-button class="el-icon-close" size="mini" style="float: right;border:none" @click="closePanel"></el-button>
-        <search-page v-bind:fund-codes="fundCodes"
-                     v-bind:a-stock-codes="aStockCodes"
-                     v-bind:hk-stock-codes="hkStockCodes"
-                     v-bind:futu-codes="fundCodes"
-                     v-bind:add-select="addSelect"
-                     v-bind:remove-select="removeSelect"
-        ></search-page>
-      </el-main>-->
+      <!--      <el-main style="height: 99%;  width: 60%; padding-top: 0px" v-show="showSearchStockPanel">
+              <el-button class="el-icon-close" size="mini" style="float: right;border:none" @click="closePanel"></el-button>
+              <search-page v-bind:fund-codes="fundCodes"
+                           v-bind:a-stock-codes="aStockCodes"
+                           v-bind:hk-stock-codes="hkStockCodes"
+                           v-bind:futu-codes="fundCodes"
+                           v-bind:add-select="addSelect"
+                           v-bind:remove-select="removeSelect"
+              ></search-page>
+            </el-main>-->
     </el-container>
     <div id="menu">
-      <div class="menu" v-for="(item,index) in menus" :key="index" @click.stop="rightMenuClick(index)">{{item}}</div>
+      <div class="menu" v-for="(item,index) in menus" :key="index" @click.stop="rightMenuClick(index)">{{ item }}</div>
     </div>
     <el-dialog
         title="设置"
@@ -113,7 +114,8 @@
           <el-switch v-model="hideMode"></el-switch>
         </el-form-item>
         <el-form-item label="小窗口显示数量">
-          <el-input-number v-model="miniStockNum" :min="1" :max="aStockCodes.length + hkStockCodes.length"></el-input-number>
+          <el-input-number v-model="miniStockNum" :min="1"
+                           :max="aStockCodes.length + hkStockCodes.length"></el-input-number>
         </el-form-item>
         <el-form-item label="透明度">
           <el-slider v-model="transparency" @change="transparencyChange" :min="Number(10)"></el-slider>
@@ -135,7 +137,7 @@ import {store} from '../../utils/configUtil';
 
 const ipcRenderer = require('electron').ipcRenderer;
 
-const { WPCResolverDelegate } = require('electron-wpc');
+const {WPCResolverDelegate} = require('electron-wpc');
 const TAG = 'tag_for_win_provider';//需填入目标Provider的tagId.
 const resolverDelegate = new WPCResolverDelegate(TAG);//这里需要传入tag以指定Provider
 
@@ -165,9 +167,9 @@ export default {
       futuInterval: null,
       setDialogVisible: false,
       activeCollapse: new Array(),
-      miniStockNum:1,
-      menus: ['删除自选'],
-      menuSelect:{}
+      miniStockNum: 1,
+      menus: ['删除', '置顶'],
+      menuSelect: null
     };
   },
   // created(){
@@ -207,20 +209,47 @@ export default {
   methods: {
     // 自定义菜单的点击事件
     rightMenuClick(index) {
-      this.removeSelect(this.menuSelect.code, this.menuSelect.type);
-      this.hidRightMenu()
+      if (index === 0) {
+        this.removeSelect(this.menuSelect.code, this.menuSelect.type);
+      } else if (index === 1) {
+        // 置顶
+        this.topCode();
+      }
+      this.hidRightMenu();
+    },
+    topCode() {
+      if (this.menuSelect === null) {
+        return;
+      }
+      switch (this.menuSelect.type) {
+        case 'gp':
+          this.topFunction(this.aStockCodes);
+          this.refreshStock();
+          store.set('leeksConfig.aStockCodes', this.aStockCodes);
+          break;
+        case 'hk':
+          this.topFunction(this.hkStockCodes);
+          this.refreshStock();
+          store.set('leeksConfig.hkStockCodes', this.hkStockCodes);
+          break;
+        case 'fund':
+          this.topFunction(this.fundCodes);
+          this.refreshFund();
+          store.set('leeksConfig.fundCodes', this.fundCodes);
+          break;
+      }
+    },
+    topFunction(codes) {
+      let index = codes.indexOf(this.menuSelect.code);
+      if (index !== 0) {
+        codes.unshift(codes.splice(index, 1)[0]);
+      }
     },
     // table的左键点击当前行事件
     hidRightMenu(row, column, event) {
       let menu = document.querySelector("#menu");
       menu.style.display = 'none';
-      this.menuSelect = {};
-      // console.log(row,column,event)
-      // this.tableData.forEach((item, index) => {
-      //   if (row.name === item.name) {
-      //     this.radio = index;
-      //   }
-      // })
+      this.menuSelect = null;
     },
     // table的右键点击当前行事件
     rightClick(row, column, event) {
@@ -238,15 +267,12 @@ export default {
         type: row.type
       }
     },
-    // open(link) {
-    //   this.$electron.shell.openExternal(link);
-    // },
     closePanel() {
       this.showSearchStockPanel = false;
       // ipcRenderer.send('asynchronous-message', 'leeks-right-close');
     },
     openMiniWin() {
-    //渲染进程中使用
+      //渲染进程中使用
       ipcRenderer.send('openStockMiniWindow');//打开
       // ipcRenderer.send('minimizeCalendarWindow');//最小化
       // ipcRenderer.send('closeCalendarWindow');//关闭
@@ -392,7 +418,7 @@ export default {
       resolverDelegate.send('select_stock_change')
           .then(res => {
             //结果返回
-            console.log('<-update_user_table res',res);
+            console.log('<-update_user_table res', res);
           })
           .catch(e => {
             //处理失败
@@ -497,10 +523,9 @@ export default {
               zd: oneStock[32] + '%',
               isDown: oneStock[32].startsWith("-"),
               price: oneStock[3],
-              type: code.startsWith('hk')? 'hk' :'gp'
+              type: code.startsWith('hk') ? 'hk' : 'gp'
             };
             if (code.startsWith('hk')) {
-
               newHkStockQuotList.push(stockQuot);
             } else {
               newAStockQuotList.push(stockQuot);
@@ -521,7 +546,7 @@ export default {
 };
 </script>
 
-<style >
+<style>
 
 #out {
   height: 99%;
@@ -580,10 +605,12 @@ export default {
   padding-bottom: 0px;
   border-bottom: none;
 }
+
 .el-collapse-item__header {
   height: 25px;
 }
-.el-divider--horizontal{
+
+.el-divider--horizontal {
   margin: 8px 0px;
   /*color: #DCDFE6 !important;*/
 }
@@ -601,7 +628,7 @@ export default {
 }
 
 .menu {
-  width: 125px;
+  width: 80px;
   height: 25px;
   line-height: 25px;
   text-indent: 10px;

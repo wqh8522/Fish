@@ -95,12 +95,14 @@ export function searchStockSina(searchKey, type,existCode) {
             if (item === '' || item === undefined || item === null) {
                 return;
             }
+
             const itemList = item.split(",");
+            let code = type === 'jj' ? itemList[2] : type === 'hk' ? 'hk'+ itemList[3] : itemList[3];
             resultList.push({
                 key: index,
-                code:  type === 'jj' ? itemList[2] : itemList[3],
+                code:  code,
                 name: itemList[3]+ ' | ' + itemList[2] + ' | ' + itemList[4],
-                isExist: existCode.indexOf(itemList[3] ) >= 0
+                isExist: existCode.indexOf(code) >= 0
             })
         });
         return resultList;
