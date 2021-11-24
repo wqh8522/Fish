@@ -43,7 +43,8 @@
 
           <el-collapse v-model="activeCollapse" >
             <el-collapse-item title="FUND" name="fund" >
-              <el-table :show-header="false" :data="fundQuotList" row-key="code" empty-text=" ">
+              <el-table :show-header="false" :data="fundQuotList" row-key="code" empty-text=" "
+                        @row-click="clickTableRow" @row-contextmenu="rightClick">
                 <el-table-column
                     prop="name"
                     label="名称">
@@ -98,6 +99,9 @@
         ></search-page>
       </el-main>-->
     </el-container>
+    <div id="menu">
+      <div class="menu" v-for="(item,index) in menus" :key="index" @click.stop="infoClick(index)">{{item}}</div>
+    </div>
     <el-dialog
         title="设置"
         :visible.sync="setDialogVisible"
@@ -159,7 +163,8 @@ export default {
       futuInterval: null,
       setDialogVisible: false,
       activeCollapse: new Array(),
-      miniStockNum:1
+      miniStockNum:1,
+      menus: ['详细信息', '方案分析', '方案存库', '清除方案'],
     };
   },
   // created(){
@@ -194,6 +199,48 @@ export default {
     this.transparencyChange();
   },
   methods: {
+    // 自定义菜单的点击事件
+    infoClick(index) {
+      this.$alert('当前table的下标为'+this.currentRowIndex ,'你点击了自定义菜单的'+this.menus[index]+'功能', {
+        confirmButtonText: '确定',
+        callback: action => {
+          var menu = document.querySelector("#menu");
+          menu.style.display = 'none';
+        }
+      });
+    },
+    // table的左键点击当前行事件
+    clickTableRow(row, column, event) {
+      var menu = document.querySelector("#menu");
+      menu.style.display = 'none';
+      // console.log(row,column,event)
+      this.tableData.forEach((item, index) => {
+        if (row.name === item.name) {
+          this.radio = index;
+        }
+      })
+    },
+    // table的右键点击当前行事件
+    rightClick(row, column, event) {
+      var menu = document.querySelector("#menu");
+      event.preventDefault();
+      //获取我们自定义的右键菜单
+
+
+      // 根据事件对象中鼠标点击的位置，进行定位
+      menu.style.left = event.clientX + 'px';
+      menu.style.top = event.clientY + 'px';
+      // 改变自定义菜单的隐藏与显示
+      menu.style.display = 'block';
+      console.log(row,column);
+      // 获取当前右键点击table下标
+      this.tableData.forEach((item,index) => {
+        if(item.name === row.name) {
+          this.currentRowIndex = index;
+          return false;
+        }
+      })
+    },
     // open(link) {
     //   this.$electron.shell.openExternal(link);
     // },
@@ -539,5 +586,29 @@ export default {
 .el-divider--horizontal{
   margin: 8px 0px;
   /*color: #DCDFE6 !important;*/
+}
+
+#menu {
+  width: 120px;
+  height: 100px;
+  overflow: hidden; /*隐藏溢出的元素*/
+  box-shadow: 0 1px 1px #888, 1px 0 1px #ccc;
+  position: absolute;
+  display: none;
+  background: #ffffff;
+  z-index: 10;
+}
+
+.menu {
+  width: 125px;
+  height: 25px;
+  line-height: 25px;
+  text-indent: 10px;
+  cursor: pointer;
+}
+
+.menu:hover {
+  color: deeppink;
+  text-decoration: underline;
 }
 </style>
