@@ -20,8 +20,8 @@
       </el-input>
     </div>
     <div style="height: 100%">
-      <el-card class="box-card" v-show="tableDataList.length > 0">
-        <div v-for="val in tableDataList" :key="val.code" class="text item" >
+      <el-card class="box-card" v-show="tableDataList.length > 0" body-style="height: 50px">
+        <div v-for="val in tableDataList" :key="val.key" class="text item" >
           <span> {{ val.name }} </span
           >
           <el-button
@@ -90,7 +90,7 @@ export default {
         this.searchStock('hk', this.hkStockCodes)
       } else if (this.select === "fund") {
         // 搜索基金
-        this.searchStock('jj', this.fundCodes)
+        this.searchFund()
       } else if (this.select === "futu") {
         // 搜索基金
         this.searchFutu()
@@ -117,20 +117,20 @@ export default {
       });
     },
     searchStock(type, existCode) {
-      searchStockSina(this.searchText, type).then((res) => {
+      searchStockSina(this.searchText, type,existCode).then((res) => {
           this.tableDataList =  res;
       }).catch((error) => {
         console.log(error);
         this.$message.error("搜索失败");
       });
-
-      // 搜索股票
-      // searchStockTx(this.searchText, type).then((res) => {
-      //   this.tableDataList =  res;
-      // }).catch((error) => {
-      //   console.log(error);
-      //   this.$message.error("搜索失败");
-      // });
+    },
+    searchFund() {
+      searchStockTx(this.searchText, 'jj', this.fundCodes).then((res) => {
+        this.tableDataList =  res;
+      }).catch((error) => {
+        console.log(error);
+        this.$message.error("搜索基金失败");
+      });
     },
     addSelectM(val) {
       this.addSelect(val, this.select)

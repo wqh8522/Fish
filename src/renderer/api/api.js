@@ -28,7 +28,7 @@ export function getStockQuotTx(codes) {
 }
 
 // 腾讯搜索接口 https://smartbox.gtimg.cn/s3/?v=2&q=22222&t=hk
-export function searchStockTx(searchKey, type) {
+export function searchStockTx(searchKey, type,existCode) {
 
     return request({
         url: 'https://smartbox.gtimg.cn/s3/?v=2&t=' + type + '&q=' + searchKey,
@@ -36,16 +36,18 @@ export function searchStockTx(searchKey, type) {
     }).then((res) => {
         const searchResList = eval("'" + res.data + "'").replace('v_hint="', '').replace('"', '').split('^');
         if (searchResList.length <= 0 || searchResList[0] === 'N;') {
-          return;
+            return;
         }
         const resultList = new Array();
-        searchResList.forEach((item) => {
-          const itemList = item.split("~");
-          resultList.push({
-            code: type === 'jj' ? itemList[1] : itemList[0] + itemList[1],
-            name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
-            // isExist: existCode.indexOf(itemList[0] + itemList[1]) >= 0
-          })
+        searchResList.forEach((item, index) => {
+            const itemList = item.split("~");
+            const  code = type === 'jj' ? itemList[1] : itemList[0] + itemList[1]
+            resultList.push({
+                key: index,
+                code: code,
+                name: itemList[0] + itemList[1] + ' | ' + itemList[2] + ' | ' + itemList[3] + ' | ' + itemList[4],
+                isExist: existCode.indexOf(code) >= 0
+            })
         })
         return resultList;
     })
@@ -57,7 +59,7 @@ export function searchStockTx(searchKey, type) {
 // 11,12,13,14,15    沪深
 // 31,33,32          港股
 // 85 				 期货
-export function searchStockSina(searchKey, type) {
+export function searchStockSina(searchKey, type,existCode) {
     let searchType = '';
     switch (type) {
         case 'jj':
@@ -82,20 +84,23 @@ export function searchStockSina(searchKey, type) {
             name: name
         }
     }).then((res) => {
+        //var suggestdata_1637759317505="sz000002,11,000002,sz000002,万科A,,万科A,99,1,ESG;sh600028,11,600028,sh600028,中国石化,,中国石化,99,1,ESG;";
         const resultList = new Array();
         const resData = res.data.replace('var ' + name + '=', '').replaceAll('\"', '');
         if (resData === null || resData === ';') {
             return resultList;
         }
         const searchResList = resData.split(';');
-        searchResList.forEach((item) => {
+        searchResList.forEach((item, index) => {
             if (item === '' || item === undefined || item === null) {
                 return;
             }
             const itemList = item.split(",");
             resultList.push({
-                code: itemList[2],
-                name: itemList[2] + ' | ' + itemList[4]
+                key: index,
+                code:  type === 'jj' ? itemList[2] : itemList[3],
+                name: itemList[3]+ ' | ' + itemList[2] + ' | ' + itemList[4],
+                isExist: existCode.indexOf(itemList[3] ) >= 0
             })
         });
         return resultList;

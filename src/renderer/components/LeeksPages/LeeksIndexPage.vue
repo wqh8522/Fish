@@ -10,7 +10,7 @@
           <el-popover
               placement="bottom"
               width="350"
-              style="height: 100%"
+              style="height: 50%"
               trigger="manual"
               v-model="showSearchStockPanel">
             <search-page v-if="showSearchStockPanel" v-bind:fund-codes="fundCodes"
